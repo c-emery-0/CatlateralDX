@@ -70,3 +70,7 @@ crashlytics-build.properties
 # Temporary auto-generated Android Assets
 /[Aa]ssets/[Ss]treamingAssets/aa.meta
 /[Aa]ssets/[Ss]treamingAssets/aa/*
+
+
+#this nasty thing wont let me commit to github
+/CatlateralDX/Library/PackageCache/com.unity.burst@1.8.11/.Runtime/libburst-llvm-15.dylib
