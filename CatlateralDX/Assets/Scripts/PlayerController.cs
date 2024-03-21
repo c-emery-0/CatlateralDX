@@ -10,19 +10,14 @@ public class PlayerController : MonoBehaviour
     public float gravityScale = 1.5f;
 
     // Movement state machine:  0 is still, -1 is left, 1 is right
-    string moveDirection = "moveDirection";
-    string isGrounded = "isGrounded";
-    string charState = "CharState";
+    float moveDirection = 0;
 
     // Object component references
     Rigidbody2D r2d;
     BoxCollider2D mainCollider;
-    Animator animator;
-    SpriteRenderer spriterenderer;
+    SpriteRenderer spriteRenderer;
 
-    const int walk = 1;
-    const int idle = 0;
-    const int jump = 2;
+    [SerializeField] private LayerMask groundLayer;
 
     // To get camera to follow Player: 
     //      1. Add/install Cinemachine from Unity package manager
@@ -37,14 +32,9 @@ public class PlayerController : MonoBehaviour
     void Start()
     {
         // initialize object component variables
-        spriterenderer = GetComponent<SpriteRenderer>();
-        animator = GetComponent<Animator>();
         r2d = GetComponent<Rigidbody2D>();
         mainCollider = GetComponent<BoxCollider2D>();
-
-
-        animator.SetInteger(moveDirection, 0);
-        animator.SetBool(isGrounded, false);
+        spriteRenderer = GetComponent<SpriteRenderer>();
 
         // If freezeRotation is enabled, the rotation in Z is not modified by the physics simulation.
         //      Good for 2D!
@@ -63,42 +53,64 @@ public class PlayerController : MonoBehaviour
     void Update()
     {
         // Movement controls (left and right)
-        if (Input.GetKey(KeyCode.A))
+        if (Input.GetKey(KeyCode.LeftArrow))
         {
-            animator.SetInteger(moveDirection, -1);
-            spriterenderer.flipX = true;
+            moveDirection = -1;
+            spriteRenderer.flipX = true;
         }
-        else if (Input.GetKey(KeyCode.D))
-        {            
-            animator.SetInteger(moveDirection, 1);
-            spriterenderer.flipX = false;
+        else if (Input.GetKey(KeyCode.RightArrow))
+        {
+            moveDirection = 1;            
+            spriteRenderer.flipX = false;
+
         }
-        else if (animator.GetBool(isGrounded) || r2d.velocity.magnitude < 0.01f)
-        {            
-            animator.SetInteger(moveDirection, 0);
+        else if (isGrounded() || r2d.velocity.magnitude < 0.01f)
+        {
+            moveDirection = 0;
         }
 
         // Jumping
-        if ((Input.GetKeyDown(KeyCode.W) || Input.GetKeyDown(KeyCode.Space)) && animator.GetBool(isGrounded))
+        if (Input.GetKeyDown(KeyCode.C) && isGrounded())
         {
             // Apply movement velocity in the y direction
             r2d.velocity = new Vector2(r2d.velocity.x, jumpHeight);
         }
 
-
-        if ((animator.GetInteger(moveDirection)) != 0 ) {
-            animator.SetInteger(charState, walk);
-        }
-        else if ((animator.GetInteger(moveDirection)) == 0 ) {
-            animator.SetInteger(charState, idle);
-        }
-        else if ( !animator.GetBool(isGrounded) ) {
-            animator.SetInteger(charState, jump);
-        }
     }
     // Called at fixed intervals regardless of frame rate, unlike the Update method.
     void FixedUpdate()
     {
+        //check if player collides with top, bottom, front (direction movement), behind
+        bool top = Physics2D.Raycast(transform.position, Vector2.up, (mainCollider.size.y  *‌ 0.5f Mathf.Abs(transform.localScale.y)));
+        bool bot = Physics2D.Raycast(transform.position, 
+                Vector2.down, mainCollider.size.y *‌ 0.5 Mathf.Abs(transform.localScale.y));
+        if (bot) Debug.Log("bot"); else Debug.Log("no bot");
+        if (top) Debug.Log("top"); else Debug.Log("no top");
+        
+        bool front = Physics2D.Raycast(transform.position, 
+                Vector2.right * moveDirection, mainCollider.size.x / 2*‌Mathf.Abs(transform.localScale.x));
+        if (front) Debug.Log("front");
+        bool behind = Physics2D.Raycast(transform.position, 
+                Vector2.right * - moveDirection, mainCollider.size.x / 2 * ‌Mathf.Abs(transform.localScale.x));
+        if (behind) Debug.Log("behind");
+        Debug.Log("-");
+
+        /*
+        if (front) r2d.velocity = new Vector2(0, r2d.velocity.y);
+        */
+
+
+        // Apply movement velocity in the x direction
+        r2d.velocity = new Vector2((moveDirection) * maxSpeed, r2d.velocity.y);
+
+    }
+    private bool isGrounded()
+    {
+        RaycastHit2D hit = Physics2D.CircleCast(mainCollider.bounds.center, mainCollider.size.x / 2, Vector2.down, 0.1f, groundLayer);
+        return hit.collider != null;
+
+
+        /*
         // Get information from Player's collider
         Bounds colliderBounds = mainCollider.bounds;
         float colliderRadius = mainCollider.size.x * 0.4f * Mathf.Abs(transform.localScale.x);
@@ -109,24 +121,21 @@ public class PlayerController : MonoBehaviour
         //Access all overlapping colliders at groundCheckPos
         Collider2D[] colliders = Physics2D.OverlapCircleAll(groundCheckPos, colliderRadius);
 
-        animator.SetBool(isGrounded, false);
+        isGrounded = false;
         //Check if any of the overlapping colliders are not player collider, if so, set isGrounded to true
         if (colliders.Length > 0)
         {
             for (int i = 0; i < colliders.Length; i++)
+
             {
                 if (colliders[i] != mainCollider)
                 {
-                    animator.SetBool(isGrounded, true);
+                    isGrounded = true;
                     Debug.Log("Landed on: " + colliders[i]);
                     break;
                 }
             }
         }
-
-        // Apply movement velocity in the x direction
-        r2d.velocity = new Vector2((animator.GetInteger(moveDirection)) * maxSpeed, r2d.velocity.y);
-
+        */
     }
-
 }
