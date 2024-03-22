@@ -110,8 +110,9 @@ public class PlayerController : MonoBehaviour
     }
     private bool isGrounded()
     {
-        float magnitudey =  (mainCollider.size.y) * 0.5f ;
+        float magnitudey =  (mainCollider.size.y) * 0.6f ;
         bool bot = Physics2D.Raycast(transform.position, Vector2.down, magnitudey);
+        Debug.DrawRay(position, direction, Color.green);
         return bot;
         RaycastHit2D hit = Physics2D.CircleCast(mainCollider.bounds.center, mainCollider.size.x / 2, Vector2.down, 0.1f, groundLayer);
         return hit.collider != null;
