@@ -13,7 +13,6 @@ public class PlayerController : MonoBehaviour
     [SerializeField] private float fallLongMult = 0.85f;
     [SerializeField] private float fallShortMult = 1.55f;
     
-    [SerializeField] public LineCast linerenderer;
     // Movement state machine:  0 is still, -1 is left, 1 is right
     float moveDirection = 0;
 
@@ -21,7 +20,6 @@ public class PlayerController : MonoBehaviour
     Rigidbody2D r2d;
     BoxCollider2D mainCollider;
     SpriteRenderer spriteRenderer;
-    LineRenderer lineRenderer;
 
     [SerializeField] private LayerMask groundLayer;
 
@@ -41,8 +39,6 @@ public class PlayerController : MonoBehaviour
         r2d = GetComponent<Rigidbody2D>();
         mainCollider = GetComponent<BoxCollider2D>();
         spriteRenderer = GetComponent<SpriteRenderer>();
-        lineRenderer = linerender.GetComponent<LineRenderer>();
-        lineRenderer.widthMultiplier = 0.25f;
         // If freezeRotation is enabled, the rotation in Z is not modified by the physics simulation.
         //      Good for 2D!
         r2d.freezeRotation = true;
@@ -77,40 +73,39 @@ public class PlayerController : MonoBehaviour
         }
 
         // Jumping
-        if (isGrounded() && Input.GetButtonDown(KeyCode.C)) jump = true; //toggle, not "live"
-        jumpHeld = (!isOnGround() && Input.GetButton(KeyCode.C)); 
+        jump = (isGrounded() && Input.GetKeyDown(KeyCode.C)); //getKeyDown is true on first frame if button is depressed
+        jumpHeld = (!isGrounded() && Input.GetKey(KeyCode.C)); //getKey is true for every frame if button is depressed
 
 
         if (jump)
         {
             float jumpvel = 2f;
-            r2d.velocity = Vector2.up * jumpvel;
+            r2d.velocity = Vector2.up * jumpvel * jumpHeight;
             jump = false;
         }
     
         // jumpheight dependent on holding down the jump
         if(r2d.velocity.y > 0)
             r2d.velocity += (jumpHeld)
-            ? Vector2.up * Physics2D.gravity.y * (fallLongMult - 1) * Time.fixedDeltaTime 
-            : Vector2.up * Physics2D.gravity.y * (fallShortMult - 1) * Time.fixedDeltaTime;
+            ? Vector2.up * Physics2D.gravity.y * jumpHeight * (fallLongMult - 1) * Time.fixedDeltaTime 
+            : Vector2.up * Physics2D.gravity.y * jumpHeight * (fallShortMult - 1) * Time.fixedDeltaTime;
 
     }
     // Called at fixed intervals regardless of frame rate, unlike the Update method.
     void FixedUpdate()
     {
         //check if player collides with top, bottom, front (direction movement), behind
-        float magnitudey =  (mainCollider.size.y) * 0.5f * Mathf.Abs(transform.localScale.y) + 1;
-        float magnitudex = mainCollider.size.x * 0.5f * Mathf.Abs(transform.localScale.y);
-        bool top = Physics2D.Raycast(transform.position, Vector2.up, magnitudey);
-        bool bot = Physics2D.Raycast(transform.position, Vector2.down, magnitudey);
-        if (bot) Debug.Log("bot"); else Debug.Log("no bot");
-        if (top) Debug.Log("top"); else Debug.Log("no top");
-        
-        bool front = Physics2D.Raycast(transform.position, Vector2.right * moveDirection, magnitudex);
-        if (front) Debug.Log("front");
-        bool behind = Physics2D.Raycast(transform.position, Vector2.right * - moveDirection, magnitudex);
-        if (behind) Debug.Log("behind");
-        Debug.Log("-");
+        float magnitudey =  (mainCollider.size.y) * 0.55f ;
+        float magnitudex = mainCollider.size.x * 0.55f ;
+        RaycastHit2D top = Physics2D.Raycast(transform.position, Vector2.up, magnitudey);
+        RaycastHit2D front = Physics2D.Raycast(transform.position, Vector2.right * moveDirection, magnitudex);
+        RaycastHit2D behind = Physics2D.Raycast(transform.position, Vector2.right * - moveDirection, magnitudex);
+        Color color1 = (top.collider != null) ? Color.green : Color.blue;
+        Color color2 = (front.collider != null) ? Color.green : Color.blue;
+        Color color3 = (behind.collider != null) ? Color.green : Color.blue;
+        Debug.DrawRay(transform.position, Vector2.up * magnitudey, color1);
+        Debug.DrawRay(transform.position, Vector2.right * moveDirection * magnitudex, color2);
+        Debug.DrawRay(transform.position, Vector2.right * -moveDirection * magnitudex, color3);
 
         /*
         if (front) r2d.velocity = new Vector2(0, r2d.velocity.y);
@@ -123,12 +118,11 @@ public class PlayerController : MonoBehaviour
     }
     private bool isGrounded()
     {
-        float magnitudey =  (mainCollider.size.y) * 0.6f ;
-        bool bot = Physics2D.Raycast(transform.position, Vector2.down, magnitudey);
-        Debug.DrawRay(position, direction, Color.green);
-        return bot;
-        RaycastHit2D hit = Physics2D.CircleCast(mainCollider.bounds.center, mainCollider.size.x / 2, Vector2.down, 0.1f, groundLayer);
-        return hit.collider != null;
+        RaycastHit2D[] listHits;
+        int bot = Physics2D.Raycast(transform.position, Vector2.down, ContactFilter2D.NoFilter, listHits, (mainCollider.size.y) * 0.55f);
+        
+        Debug.DrawRay(transform.position, Vector2.down * (mainCollider.size.y) * 0.55f, bot != 0 ? Color.green : Color.red);
+        return bot != 0;
 
 
         /*
