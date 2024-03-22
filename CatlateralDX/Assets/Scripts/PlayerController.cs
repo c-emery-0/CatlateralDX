@@ -8,6 +8,10 @@ public class PlayerController : MonoBehaviour
     public float maxSpeed = 3.4f;
     public float jumpHeight = 6.5f;
     public float gravityScale = 1.5f;
+    bool jump = false, jumpHeld = false;
+ 
+    [SerializeField] private float fallLongMult = 0.85f;
+    [SerializeField] private float fallShortMult = 1.55f;
     
     [SerializeField] public LineCast linerenderer;
     // Movement state machine:  0 is still, -1 is left, 1 is right
@@ -73,13 +77,22 @@ public class PlayerController : MonoBehaviour
         }
 
         // Jumping
-        if (Input.GetKeyDown(KeyCode.C) && isGrounded())
+        if (isGrounded() && Input.GetButtonDown(KeyCode.C)) jump = true; //toggle, not "live"
+        jumpHeld = (!isOnGround() && Input.GetButton(KeyCode.C)); 
+
+
+        if (jump)
         {
-            // Apply movement velocity in the y direction
-            r2d.velocity = new Vector2(r2d.velocity.x, jumpHeight);
+            float jumpvel = 2f;
+            r2d.velocity = Vector2.up * jumpvel;
+            jump = false;
         }
-        lineRenderer.SetPosition(0, transform.position);        
-        lineRenderer.SetPosition(1, transform.position - Vector2.down * mainCollider.size.y / 2);
+    
+        // jumpheight dependent on holding down the jump
+        if(r2d.velocity.y > 0)
+            r2d.velocity += (jumpHeld)
+            ? Vector2.up * Physics2D.gravity.y * (fallLongMult - 1) * Time.fixedDeltaTime 
+            : Vector2.up * Physics2D.gravity.y * (fallShortMult - 1) * Time.fixedDeltaTime;
 
     }
     // Called at fixed intervals regardless of frame rate, unlike the Update method.
