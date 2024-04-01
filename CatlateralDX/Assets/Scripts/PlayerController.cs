@@ -23,6 +23,8 @@ public class PlayerController : MonoBehaviour
 
     [SerializeField] private LayerMask groundLayer;
 
+    private int charState;
+
     // To get camera to follow Player: 
     //      1. Add/install Cinemachine from Unity package manager
     //      2. Add a Cinemachine 2D Camera object to scene
@@ -31,6 +33,11 @@ public class PlayerController : MonoBehaviour
     // A Cinemachine virtual camera is like a cameraman controlling the position and settings 
     //      of the Main Camera, but not actually a camera itself.
 
+    private enum CharStates {
+        idle : 1,
+        walk : 2,
+        jump : 3,
+    }
 
     // Use this for initialization
     void Start()
@@ -59,12 +66,10 @@ public class PlayerController : MonoBehaviour
         if (Input.GetKey(KeyCode.LeftArrow))
         {
             moveDirection = -1;
-            spriteRenderer.flipX = true;
         }
         else if (Input.GetKey(KeyCode.RightArrow))
         {
             moveDirection = 1;            
-            spriteRenderer.flipX = false;
 
         }
         else if (isGrounded() || r2d.velocity.magnitude < 0.01f)
@@ -89,7 +94,12 @@ public class PlayerController : MonoBehaviour
             r2d.velocity += (jumpHeld)
             ? Vector2.up * Physics2D.gravity.y * jumpHeight * (fallLongMult - 1) * Time.fixedDeltaTime 
             : Vector2.up * Physics2D.gravity.y * jumpHeight * (fallShortMult - 1) * Time.fixedDeltaTime;
-
+        
+        
+        
+        
+        
+        updateCharState();
     }
     // Called at fixed intervals regardless of frame rate, unlike the Update method.
     void FixedUpdate()
@@ -100,9 +110,9 @@ public class PlayerController : MonoBehaviour
         RaycastHit2D top = Physics2D.Raycast(transform.position, Vector2.up, magnitudey);
         RaycastHit2D front = Physics2D.Raycast(transform.position, Vector2.right * moveDirection, magnitudex);
         RaycastHit2D behind = Physics2D.Raycast(transform.position, Vector2.right * - moveDirection, magnitudex);
-        Color color1 = (top.collider != null) ? Color.green : Color.blue;
-        Color color2 = (front.collider != null) ? Color.green : Color.blue;
-        Color color3 = (behind.collider != null) ? Color.green : Color.blue;
+        Color color1 = (top.collider) ? Color.green : Color.blue;
+        Color color2 = (front.collider) ? Color.green : Color.blue;
+        Color color3 = (behind.collider) ? Color.green : Color.blue;
         Debug.DrawRay(transform.position, Vector2.up * magnitudey, color1);
         Debug.DrawRay(transform.position, Vector2.right * moveDirection * magnitudex, color2);
         Debug.DrawRay(transform.position, Vector2.right * -moveDirection * magnitudex, color3);
@@ -118,11 +128,12 @@ public class PlayerController : MonoBehaviour
     }
     private bool isGrounded()
     {
-        RaycastHit2D[] listHits;
-        int bot = Physics2D.Raycast(transform.position, Vector2.down, ContactFilter2D.NoFilter, listHits, (mainCollider.size.y) * 0.55f);
+        float magnitudey =  (mainCollider.size.y) * 0.55f ;
+        RaycastHit2D bot = Physics2D.Raycast(transform.position, Vector2.up * -1, magnitudey);
+        Color color4 = (bot.collider) ? Color.green : Color.blue;
+        Debug.DrawRay(transform.position, Vector2.up * magnitudey * -1, color4);
         
-        Debug.DrawRay(transform.position, Vector2.down * (mainCollider.size.y) * 0.55f, bot != 0 ? Color.green : Color.red);
-        return bot != 0;
+        return bot;
 
 
         /*
@@ -152,5 +163,19 @@ public class PlayerController : MonoBehaviour
             }
         }
         */
+    }
+    private updateCharState() {
+        if (r2d.velocity.y != 0) {
+            //jumping/falling
+            return;
+        }
+        if (moveDirection == 0) {
+            //idle
+            return;
+        }
+        //else: walking
+        if (moveDirection < 0) spriteRenderer.flipX = true;
+        if (moveDirection > 0) spriteRenderer.flipX = false;
+        return;
     }
 }
