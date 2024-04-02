@@ -18,9 +18,9 @@ public class PlayerController : MonoBehaviour
 
     // Object component references
     Rigidbody2D r2d;
-    BoxCollider2D mainCollider;
+    BoxCollider2D coll;
     SpriteRenderer spriteRenderer;
-    Animator animator;
+    Animator anim;
 
     // To get camera to follow Player: 
     //      1. Add/install Cinemachine from Unity package manager
@@ -41,9 +41,9 @@ public class PlayerController : MonoBehaviour
     {
         // initialize object component variables
         r2d = GetComponent<Rigidbody2D>();
-        mainCollider = GetComponent<BoxCollider2D>();
+        coll = GetComponent<BoxCollider2D>();
         spriteRenderer = GetComponent<SpriteRenderer>();
-        animator = GetComponent<Animator>();
+        anim = GetComponent<Animator>();
         // If freezeRotation is enabled, the rotation in Z is not modified by the physics simulation.
         //      Good for 2D!
         r2d.freezeRotation = true;
@@ -62,18 +62,11 @@ public class PlayerController : MonoBehaviour
     {
         // Movement controls (left and right)
         if (Input.GetKey(KeyCode.LeftArrow))
-        {
             moveDirection = -1;
-        }
         else if (Input.GetKey(KeyCode.RightArrow))
-        {
-            moveDirection = 1;            
-
-        }
+            moveDirection = 1;
         else if (isGrounded() || r2d.velocity.magnitude < 0.01f)
-        {
             moveDirection = 0;
-        }
 
         // Jumping
         jump = (isGrounded() && Input.GetKeyDown(KeyCode.C)); //getKeyDown is true on first frame if button is depressed
@@ -95,24 +88,31 @@ public class PlayerController : MonoBehaviour
         
         
         
-        
-        
     }
     // Called at fixed intervals regardless of frame rate, unlike the Update method.
     void FixedUpdate()
     {
         //check if player collides with top, bottom, front (direction movement), behind
-        float magnitudey =  (mainCollider.size.y) * 0.55f ;
-        float magnitudex = mainCollider.size.x * 0.55f ;
-        RaycastHit2D top = Physics2D.Raycast(transform.position, Vector2.up, magnitudey);
-        RaycastHit2D front = Physics2D.Raycast(transform.position, Vector2.right * moveDirection, magnitudex);
-        RaycastHit2D behind = Physics2D.Raycast(transform.position, Vector2.right * - moveDirection, magnitudex);
-        Color color1 = (top.collider) ? Color.green : Color.blue;
-        Color color2 = (front.collider) ? Color.green : Color.blue;
-        Color color3 = (behind.collider) ? Color.green : Color.blue;
-        Debug.DrawRay(transform.position, Vector2.up * magnitudey, color1);
-        Debug.DrawRay(transform.position, Vector2.right * moveDirection * magnitudex, color2);
-        Debug.DrawRay(transform.position, Vector2.right * -moveDirection * magnitudex, color3);
+        float magnitudey =  (coll.size.y) * 0.55f ;
+        float magnitudex = coll.size.x * 0.55f ;
+
+        RaycastHit2D[] results = {};
+        Bounds colliderBounds = coll.bounds;
+
+        int top = coll.Raycast( Vector2.up, results, magnitudey);
+        int front = coll.Raycast( Vector2.right * moveDirection,  results,magnitudex);
+        int behind = coll.Raycast( Vector2.right * - moveDirection, results, magnitudex);
+        int bot = coll.Raycast( Vector2.up * -1,  results, magnitudey);
+
+
+        Color color1 = (top!=0) ? Color.green : Color.blue;
+        Color color2 = (front!=0) ? Color.green : Color.blue;
+        Color color3 = (behind!=0) ? Color.green : Color.blue;
+        Color color4 = (bot !=0) ? Color.green : Color.blue;
+        Debug.DrawRay(colliderBounds.center, Vector2.up * magnitudey, color1);
+        Debug.DrawRay(colliderBounds.center, Vector2.right * moveDirection * magnitudex, color2);
+        Debug.DrawRay(colliderBounds.center, Vector2.right * -moveDirection * magnitudex, color3);
+        Debug.DrawRay(colliderBounds.center, Vector2.up * magnitudey * -1, color4);
 
         /*
         if (front) r2d.velocity = new Vector2(0, r2d.velocity.y);
@@ -126,18 +126,22 @@ public class PlayerController : MonoBehaviour
     }
     private bool isGrounded()
     {
-        float magnitudey =  (mainCollider.size.y) * 0.55f ;
-        RaycastHit2D bot = Physics2D.Raycast(transform.position, Vector2.up * -1, magnitudey);
-        Color color4 = (bot.collider) ? Color.green : Color.blue;
-        Debug.DrawRay(transform.position, Vector2.up * magnitudey * -1, color4);
+        RaycastHit2D[] results = {};
+        Bounds colliderBounds = coll.bounds;
+        float magnitudey =  (coll.size.y) * 1f ;
+        int bot = coll.Raycast( Vector2.up * -1,  results, magnitudey);
+        Color color4 = (bot > 1) ? Color.green : Color.blue;
+        Debug.DrawRay(colliderBounds.center, Vector2.up * magnitudey * -1, color4);
+
+        Debug.Log(bot);
         
-        return bot;
+        return bot != 0;
 
 
         /*
         // Get information from Player's collider
-        Bounds colliderBounds = mainCollider.bounds;
-        float colliderRadius = mainCollider.size.x * 0.4f * Mathf.Abs(transform.localScale.x);
+        Bounds colliderBounds = coll.bounds;
+        float colliderRadius = coll.size.x * 0.4f * Mathf.Abs(transform.localScale.x);
 
         // Position to check for if grounded
         Vector3 groundCheckPos = colliderBounds.min + new Vector3(colliderBounds.size.x * 0.5f, colliderRadius * 0.9f, 0);
@@ -152,7 +156,7 @@ public class PlayerController : MonoBehaviour
             for (int i = 0; i < colliders.Length; i++)
 
             {
-                if (colliders[i] != mainCollider)
+                if (colliders[i] != coll)
                 {
                     isGrounded = true;
                     Debug.Log("Landed on: " + colliders[i]);
@@ -166,16 +170,16 @@ public class PlayerController : MonoBehaviour
         if (moveDirection < 0) spriteRenderer.flipX = true;
         if (moveDirection > 0) spriteRenderer.flipX = false;
 
-        
+
         if (r2d.velocity.y != 0) {
-            animator.SetInteger("CharState", (int) CharStates.jump);
+            anim.SetInteger("CharState", (int) CharStates.jump);
             return;
         }
         if (moveDirection == 0) {
-            animator.SetInteger("CharState", (int) CharStates.idle);
+            anim.SetInteger("CharState", (int) CharStates.idle);
             return;
         }
-            animator.SetInteger("CharState", (int) CharStates.walk);
+            anim.SetInteger("CharState", (int) CharStates.walk);
         return;
     }
 }
