@@ -21,6 +21,7 @@ public class PlayerController : MonoBehaviour
     BoxCollider2D coll;
     SpriteRenderer spriteRenderer;
     Animator anim;
+    Collision collision;
 
     // To get camera to follow Player: 
     //      1. Add/install Cinemachine from Unity package manager
@@ -44,6 +45,7 @@ public class PlayerController : MonoBehaviour
         coll = GetComponent<BoxCollider2D>();
         spriteRenderer = GetComponent<SpriteRenderer>();
         anim = GetComponent<Animator>();
+        coll = GetComponent<Collision>();
         // If freezeRotation is enabled, the rotation in Z is not modified by the physics simulation.
         //      Good for 2D!
         r2d.freezeRotation = true;
@@ -92,28 +94,6 @@ public class PlayerController : MonoBehaviour
     // Called at fixed intervals regardless of frame rate, unlike the Update method.
     void FixedUpdate()
     {
-        //check if player collides with top, bottom, front (direction movement), behind
-        float magnitudey =  (coll.size.y) * 0.55f ;
-        float magnitudex = coll.size.x * 0.55f ;
-
-        RaycastHit2D[] results = {};
-        Bounds colliderBounds = coll.bounds;
-
-        int top = coll.Raycast( Vector2.up, results, magnitudey);
-        int front = coll.Raycast( Vector2.right * moveDirection,  results,magnitudex);
-        int behind = coll.Raycast( Vector2.right * - moveDirection, results, magnitudex);
-        int bot = coll.Raycast( Vector2.up * -1,  results, magnitudey);
-
-
-        Color color1 = (top!=0) ? Color.green : Color.blue;
-        Color color2 = (front!=0) ? Color.green : Color.blue;
-        Color color3 = (behind!=0) ? Color.green : Color.blue;
-        Color color4 = (bot !=0) ? Color.green : Color.blue;
-        Debug.DrawRay(colliderBounds.center, Vector2.up * magnitudey, color1);
-        Debug.DrawRay(colliderBounds.center, Vector2.right * moveDirection * magnitudex, color2);
-        Debug.DrawRay(colliderBounds.center, Vector2.right * -moveDirection * magnitudex, color3);
-        Debug.DrawRay(colliderBounds.center, Vector2.up * magnitudey * -1, color4);
-
         /*
         if (front) r2d.velocity = new Vector2(0, r2d.velocity.y);
         */
@@ -126,16 +106,7 @@ public class PlayerController : MonoBehaviour
     }
     private bool isGrounded()
     {
-        RaycastHit2D[] results = {};
-        Bounds colliderBounds = coll.bounds;
-        float magnitudey =  (coll.size.y) * 1f ;
-        int bot = coll.Raycast( Vector2.up * -1,  results, magnitudey);
-        Color color4 = (bot > 1) ? Color.green : Color.blue;
-        Debug.DrawRay(colliderBounds.center, Vector2.up * magnitudey * -1, color4);
-
-        Debug.Log(bot);
-        
-        return bot != 0;
+        return collision.onGround;
 
 
         /*
