@@ -20,7 +20,7 @@ public class Collision : MonoBehaviour
 
     [Header("Collision")]
 
-    public float collisionRadius = 0.25f;
+    public float collisionRadius = 1.7f;
     public Vector2 bottomOffset, rightOffset, leftOffset;
     private Color debugCollisionColor = Color.red;
 
@@ -45,12 +45,10 @@ public class Collision : MonoBehaviour
 
     void OnDrawGizmos()
     {
-        Gizmos.color = Color.red;
+        Gizmos.color = (onGround) ? Color.red : Color.green;
 
-        var positions = new Vector2[] { bottomOffset, rightOffset, leftOffset };
+        var positions =  bottomOffset + rightOffset + leftOffset ;
 
-        Gizmos.DrawWireSphere((Vector2)transform.position  + bottomOffset, collisionRadius);
-        Gizmos.DrawWireSphere((Vector2)transform.position + rightOffset, collisionRadius);
-        Gizmos.DrawWireSphere((Vector2)transform.position + leftOffset, collisionRadius);
+        Gizmos.DrawWireSphere((Vector2)transform.position  + positions, collisionRadius);
     }
 }

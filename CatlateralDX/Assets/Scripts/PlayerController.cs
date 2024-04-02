@@ -10,17 +10,20 @@ public class PlayerController : MonoBehaviour
     public float gravityScale = 1.5f;
     bool jump = false, jumpHeld = false;
  
-    [SerializeField] private float fallLongMult = 0.85f;
-    [SerializeField] private float fallShortMult = 1.55f;
+    [Space]
+
+    public float fallMultiplier = 2.5f;
+    public float lowJumpMultiplier = 2f;
     
     // Movement state machine:  0 is still, -1 is left, 1 is right
     float moveDirection = 0;
 
     // Object component references
     Rigidbody2D r2d;
-    BoxCollider2D coll;
+    BoxCollider2D boxcoll2d;
     SpriteRenderer spriteRenderer;
     Animator anim;
+    Collision collision;
 
     // To get camera to follow Player: 
     //      1. Add/install Cinemachine from Unity package manager
@@ -41,9 +44,11 @@ public class PlayerController : MonoBehaviour
     {
         // initialize object component variables
         r2d = GetComponent<Rigidbody2D>();
-        coll = GetComponent<BoxCollider2D>();
+        boxcoll2d = GetComponent<BoxCollider2D>();
         spriteRenderer = GetComponent<SpriteRenderer>();
         anim = GetComponent<Animator>();
+        collision = GetComponent<Collision>();
+
         // If freezeRotation is enabled, the rotation in Z is not modified by the physics simulation.
         //      Good for 2D!
         r2d.freezeRotation = true;
@@ -65,12 +70,13 @@ public class PlayerController : MonoBehaviour
             moveDirection = -1;
         else if (Input.GetKey(KeyCode.RightArrow))
             moveDirection = 1;
-        else if (isGrounded() || r2d.velocity.magnitude < 0.01f)
+        else if (collision.onGround || r2d.velocity.magnitude < 0.01f)
             moveDirection = 0;
 
+        /*
         // Jumping
-        jump = (isGrounded() && Input.GetKeyDown(KeyCode.C)); //getKeyDown is true on first frame if button is depressed
-        jumpHeld = (!isGrounded() && Input.GetKey(KeyCode.C)); //getKey is true for every frame if button is depressed
+        jump = (collision.onGround && Input.GetKeyDown(KeyCode.C)); //getKeyDown is true on first frame if button is depressed
+        jumpHeld = (!collision.onGround && Input.GetKey(KeyCode.C)); //getKey is true for every frame if button is depressed
 
 
         if (jump)
@@ -86,85 +92,27 @@ public class PlayerController : MonoBehaviour
             ? Vector2.up * Physics2D.gravity.y * jumpHeight * (fallLongMult - 1) * Time.fixedDeltaTime 
             : Vector2.up * Physics2D.gravity.y * jumpHeight * (fallShortMult - 1) * Time.fixedDeltaTime;
         
-        
+        */
+        if(r2d.velocity.y < 0)
+        {
+            r2d.velocity += Vector2.up * Physics2D.gravity.y * (fallMultiplier - 1) * Time.deltaTime;
+        }
+        else if(r2d.velocity.y > 0 && !Input.GetKeyDown(KeyCode.C))
+        {
+            r2d.velocity += Vector2.up * Physics2D.gravity.y * (lowJumpMultiplier - 1) * Time.deltaTime;
+        }
         
     }
     // Called at fixed intervals regardless of frame rate, unlike the Update method.
     void FixedUpdate()
     {
-        //check if player collides with top, bottom, front (direction movement), behind
-        float magnitudey =  (coll.size.y) * 0.55f ;
-        float magnitudex = coll.size.x * 0.55f ;
-
-        RaycastHit2D[] results = {};
-        Bounds colliderBounds = coll.bounds;
-
-        int top = coll.Raycast( Vector2.up, results, magnitudey);
-        int front = coll.Raycast( Vector2.right * moveDirection,  results,magnitudex);
-        int behind = coll.Raycast( Vector2.right * - moveDirection, results, magnitudex);
-        int bot = coll.Raycast( Vector2.up * -1,  results, magnitudey);
-
-
-        Color color1 = (top!=0) ? Color.green : Color.blue;
-        Color color2 = (front!=0) ? Color.green : Color.blue;
-        Color color3 = (behind!=0) ? Color.green : Color.blue;
-        Color color4 = (bot !=0) ? Color.green : Color.blue;
-        Debug.DrawRay(colliderBounds.center, Vector2.up * magnitudey, color1);
-        Debug.DrawRay(colliderBounds.center, Vector2.right * moveDirection * magnitudex, color2);
-        Debug.DrawRay(colliderBounds.center, Vector2.right * -moveDirection * magnitudex, color3);
-        Debug.DrawRay(colliderBounds.center, Vector2.up * magnitudey * -1, color4);
-
         /*
         if (front) r2d.velocity = new Vector2(0, r2d.velocity.y);
         */
-        if (isGrounded()) Debug.Log("isgrounded");
-
         updateCharState();
         // Apply movement velocity in the x direction
         r2d.velocity = new Vector2((moveDirection) * maxSpeed, r2d.velocity.y);
 
-    }
-    private bool isGrounded()
-    {
-        RaycastHit2D[] results = {};
-        Bounds colliderBounds = coll.bounds;
-        float magnitudey =  (coll.size.y) * 1f ;
-        int bot = coll.Raycast( Vector2.up * -1,  results, magnitudey);
-        Color color4 = (bot > 1) ? Color.green : Color.blue;
-        Debug.DrawRay(colliderBounds.center, Vector2.up * magnitudey * -1, color4);
-
-        Debug.Log(bot);
-        
-        return bot != 0;
-
-
-        /*
-        // Get information from Player's collider
-        Bounds colliderBounds = coll.bounds;
-        float colliderRadius = coll.size.x * 0.4f * Mathf.Abs(transform.localScale.x);
-
-        // Position to check for if grounded
-        Vector3 groundCheckPos = colliderBounds.min + new Vector3(colliderBounds.size.x * 0.5f, colliderRadius * 0.9f, 0);
-        
-        //Access all overlapping colliders at groundCheckPos
-        Collider2D[] colliders = Physics2D.OverlapCircleAll(groundCheckPos, colliderRadius);
-
-        isGrounded = false;
-        //Check if any of the overlapping colliders are not player collider, if so, set isGrounded to true
-        if (colliders.Length > 0)
-        {
-            for (int i = 0; i < colliders.Length; i++)
-
-            {
-                if (colliders[i] != coll)
-                {
-                    isGrounded = true;
-                    Debug.Log("Landed on: " + colliders[i]);
-                    break;
-                }
-            }
-        }
-        */
     }
     private void updateCharState() {
         if (moveDirection < 0) spriteRenderer.flipX = true;
