@@ -20,10 +20,7 @@ public class PlayerController : MonoBehaviour
     Rigidbody2D r2d;
     BoxCollider2D mainCollider;
     SpriteRenderer spriteRenderer;
-
-    [SerializeField] private LayerMask groundLayer;
-
-    private int charState;
+    Animator animator;
 
     // To get camera to follow Player: 
     //      1. Add/install Cinemachine from Unity package manager
@@ -34,9 +31,9 @@ public class PlayerController : MonoBehaviour
     //      of the Main Camera, but not actually a camera itself.
 
     private enum CharStates {
-        idle : 1,
-        walk : 2,
-        jump : 3,
+        idle = 1,
+        walk = 2,
+        jump = 3,
     }
 
     // Use this for initialization
@@ -46,6 +43,7 @@ public class PlayerController : MonoBehaviour
         r2d = GetComponent<Rigidbody2D>();
         mainCollider = GetComponent<BoxCollider2D>();
         spriteRenderer = GetComponent<SpriteRenderer>();
+        animator = GetComponent<Animator>();
         // If freezeRotation is enabled, the rotation in Z is not modified by the physics simulation.
         //      Good for 2D!
         r2d.freezeRotation = true;
@@ -99,7 +97,6 @@ public class PlayerController : MonoBehaviour
         
         
         
-        updateCharState();
     }
     // Called at fixed intervals regardless of frame rate, unlike the Update method.
     void FixedUpdate()
@@ -122,6 +119,7 @@ public class PlayerController : MonoBehaviour
         */
         if (isGrounded()) Debug.Log("isgrounded");
 
+        updateCharState();
         // Apply movement velocity in the x direction
         r2d.velocity = new Vector2((moveDirection) * maxSpeed, r2d.velocity.y);
 
@@ -164,18 +162,20 @@ public class PlayerController : MonoBehaviour
         }
         */
     }
-    private updateCharState() {
+    private void updateCharState() {
+        if (moveDirection < 0) spriteRenderer.flipX = true;
+        if (moveDirection > 0) spriteRenderer.flipX = false;
+
+        
         if (r2d.velocity.y != 0) {
-            //jumping/falling
+            animator.SetInteger("CharState", (int) CharStates.jump);
             return;
         }
         if (moveDirection == 0) {
-            //idle
+            animator.SetInteger("CharState", (int) CharStates.idle);
             return;
         }
-        //else: walking
-        if (moveDirection < 0) spriteRenderer.flipX = true;
-        if (moveDirection > 0) spriteRenderer.flipX = false;
+            animator.SetInteger("CharState", (int) CharStates.walk);
         return;
     }
 }
