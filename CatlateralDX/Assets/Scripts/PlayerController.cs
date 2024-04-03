@@ -10,15 +10,15 @@ public class PlayerController : MonoBehaviour
     public float gravityScale = 1.5f;
     bool jump = false, jumpHeld = false;
  
-    [SerializeField] private float fallLongMult = 0.85f;
-    [SerializeField] private float fallShortMult = 1.55f;
+    public float fallMultiplier = 2.5f;
+    public float lowJumpMultiplier = 2f;
     
     // Movement state machine:  0 is still, -1 is left, 1 is right
     float moveDirection = 0;
 
     // Object component references
     Rigidbody2D r2d;
-    BoxCollider2D coll;
+    BoxCollider2D collider;
     SpriteRenderer spriteRenderer;
     Animator anim;
     Collision collision;
@@ -42,10 +42,10 @@ public class PlayerController : MonoBehaviour
     {
         // initialize object component variables
         r2d = GetComponent<Rigidbody2D>();
-        coll = GetComponent<BoxCollider2D>();
+        collider = GetComponent<BoxCollider2D>();
         spriteRenderer = GetComponent<SpriteRenderer>();
         anim = GetComponent<Animator>();
-        coll = GetComponent<Collision>();
+        collision = GetComponent<Collision>();
         // If freezeRotation is enabled, the rotation in Z is not modified by the physics simulation.
         //      Good for 2D!
         r2d.freezeRotation = true;
@@ -67,75 +67,38 @@ public class PlayerController : MonoBehaviour
             moveDirection = -1;
         else if (Input.GetKey(KeyCode.RightArrow))
             moveDirection = 1;
-        else if (isGrounded() || r2d.velocity.magnitude < 0.01f)
+        else if (collision.onGround || r2d.velocity.magnitude < 0.01f)
             moveDirection = 0;
 
-        // Jumping
-        jump = (isGrounded() && Input.GetKeyDown(KeyCode.C)); //getKeyDown is true on first frame if button is depressed
-        jumpHeld = (!isGrounded() && Input.GetKey(KeyCode.C)); //getKey is true for every frame if button is depressed
 
-
-        if (jump)
+        if (Input.GetButtonDown("Jump"))
         {
-            float jumpvel = 2f;
-            r2d.velocity = Vector2.up * jumpvel * jumpHeight;
-            jump = false;
+            if (collision.onGround)
+                r2d.velocity = new Vector2(r2d.velocity.x, 0); //kill momentum. only a set jump dist
+                r2d.velocity += Vector2.up * 5; //the 5 is variable
+            //if (coll.onWall && !coll.onGround)
+            //    WallJump();
         }
-    
-        // jumpheight dependent on holding down the jump
-        if(r2d.velocity.y > 0)
-            r2d.velocity += (jumpHeld)
-            ? Vector2.up * Physics2D.gravity.y * jumpHeight * (fallLongMult - 1) * Time.fixedDeltaTime 
-            : Vector2.up * Physics2D.gravity.y * jumpHeight * (fallShortMult - 1) * Time.fixedDeltaTime;
-        
-        
-        
+        /* //"better jumping"
+        if(r2d.velocity.y < 0)
+        {
+            r2d.velocity += Vector2.up * Physics2D.gravity.y * (fallMultiplier - 1) * Time.deltaTime;
+        }else if(r2d.velocity.y > 0 && !Input.GetButton("Jump"))
+        {
+            r2d.velocity += Vector2.up * Physics2D.gravity.y * (lowJumpMultiplier - 1) * Time.deltaTime;
+        }
+        */
     }
     // Called at fixed intervals regardless of frame rate, unlike the Update method.
     void FixedUpdate()
     {
-        /*
-        if (front) r2d.velocity = new Vector2(0, r2d.velocity.y);
-        */
-        if (isGrounded()) Debug.Log("isgrounded");
+
 
         updateCharState();
+
         // Apply movement velocity in the x direction
         r2d.velocity = new Vector2((moveDirection) * maxSpeed, r2d.velocity.y);
 
-    }
-    private bool isGrounded()
-    {
-        return collision.onGround;
-
-
-        /*
-        // Get information from Player's collider
-        Bounds colliderBounds = coll.bounds;
-        float colliderRadius = coll.size.x * 0.4f * Mathf.Abs(transform.localScale.x);
-
-        // Position to check for if grounded
-        Vector3 groundCheckPos = colliderBounds.min + new Vector3(colliderBounds.size.x * 0.5f, colliderRadius * 0.9f, 0);
-        
-        //Access all overlapping colliders at groundCheckPos
-        Collider2D[] colliders = Physics2D.OverlapCircleAll(groundCheckPos, colliderRadius);
-
-        isGrounded = false;
-        //Check if any of the overlapping colliders are not player collider, if so, set isGrounded to true
-        if (colliders.Length > 0)
-        {
-            for (int i = 0; i < colliders.Length; i++)
-
-            {
-                if (colliders[i] != coll)
-                {
-                    isGrounded = true;
-                    Debug.Log("Landed on: " + colliders[i]);
-                    break;
-                }
-            }
-        }
-        */
     }
     private void updateCharState() {
         if (moveDirection < 0) spriteRenderer.flipX = true;
