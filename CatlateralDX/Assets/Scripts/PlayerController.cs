@@ -74,8 +74,8 @@ public class PlayerController : MonoBehaviour
         if (Input.GetButtonDown("Jump"))
         {
             if (collision.onGround)
-                r2d.velocity = new Vector2(r2d.velocity.x, 0); //kill momentum. only a set jump dist
-                r2d.velocity += Vector2.up * 5; //the 5 is variable
+                r2d.velocity = new Vector2(r2d.velocity.x, 0); //kill vertical momentum. only a set jump dist
+                r2d.velocity += Vector2.up * 5; //the 5 is variable. jump height
             //if (coll.onWall && !coll.onGround)
             //    WallJump();
         }
