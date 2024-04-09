@@ -5,7 +5,7 @@ using UnityEngine;
 public class PlayerController : MonoBehaviour
 {
     // Movement mechanics variables
-    public float maxSpeed = 3.4f;
+    public float maxSpeed = 10f;
     public float jumpHeight = 6.5f;
     public float gravityScale = 1.5f;
     bool jump = false, jumpHeld = false;
@@ -96,9 +96,19 @@ public class PlayerController : MonoBehaviour
 
         updateCharState();
 
-        // Apply movement velocity in the x direction
-        r2d.velocity = new Vector2((moveDirection) * maxSpeed, r2d.velocity.y);
-
+        // X movement
+        xvelo = r2d.velocity.x;
+        if (moveDirection == 0 && System.Math.Abs(r2d.velocity.x) > .01f)
+            xvelo = -1 * moveDirection * maxSpeed * 50f;
+        else if (System.Math.Abs(r2d.velocity.x) <= .01f)
+            xvelo = 0;
+        else if (System.Math.Abs(r2d.velocity.x) < maxSpeed)
+            xvelo = moveDirection * maxSpeed * 0.1f;
+        else if (moveDirection != 0)
+            r2d.velocity = new Vector2(moveDirection * .1f, r2d.velocity.y);
+       
+       r2d.velocity = new Vector2(xvelo, r2d.velocity.y)
+        
     }
     private void updateCharState() {
         if (moveDirection < 0) spriteRenderer.flipX = true;
