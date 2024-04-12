@@ -6,7 +6,7 @@ public class PlayerController : MonoBehaviour
 {
     // Movement mechanics variables
     public float maxSpeed = 10f;
-    public float jumpHeight = 6.5f;
+    public float jumpHeight = 15f;
     public float gravityScale = 1.5f;
     bool jump = false, jumpHeld = false;
  
@@ -22,6 +22,8 @@ public class PlayerController : MonoBehaviour
     SpriteRenderer spriteRenderer;
     Animator anim;
     Collision collision;
+
+    int inputx, inputy;
 
     // To get camera to follow Player: 
     //      1. Add/install Cinemachine from Unity package manager
@@ -63,20 +65,54 @@ public class PlayerController : MonoBehaviour
     void Update()
     {
         // Movement controls (left and right)
-        if (Input.GetKey(KeyCode.LeftArrow))
-            moveDirection = -1;
-        else if (Input.GetKey(KeyCode.RightArrow))
-            moveDirection = 1;
-        else if (collision.onGround || r2d.velocity.magnitude < 0.01f)
-            moveDirection = 0;
+        inputx = Input.GetKey(KeyCode.LeftArrow) ? -1 : 0;
+        inputx = Input.GetKey(KeyCode.RightArrow) ? 1 : inputx;
+        inputy = Input.GetButtonDown("Jump") ? 1 : 0;
+
+        moveDirection = inputx;
 
 
-        if (Input.GetButtonDown("Jump"))
+    }
+    // Called at fixed intervals regardless of frame rate, unlike the Update method.
+    void FixedUpdate()
+    {
+        updateCharState();
+        
+        // Apply movement velocity in the x direction
+        //r2d.velocity = new Vector2((moveDirection) * maxSpeed, r2d.velocity.y);
+
+        // X movement
+        //movedir is 0 if (collision.onGround || r2d.velocity.magnitude < 0.01f)
+
+        float xvelo = r2d.velocity.x;
+        //if (System.Math.Abs(r2d.velocity.x) <= .01f)
+        //    xvelo = 0;
+        //else 
+        if (System.Math.Abs(r2d.velocity.x) < maxSpeed)
+            xvelo += moveDirection * maxSpeed * 0.1f;
+        if (moveDirection == 0) 
+            xvelo = 0;
+        r2d.velocity = new Vector2(xvelo, r2d.velocity.y);
+        
+
+        if (!collision.onGround)
+            r2d.velocity = new Vector2(r2d.velocity.x, r2d.velocity.y + Physics2D.gravity.y * Time.deltaTime);
+        else
+            r2d.velocity = new Vector2(r2d.velocity.x, 0);
+        if (inputy == 1 && collision.onGround)
         {
-            if (collision.onGround)
-                r2d.velocity = new Vector2(r2d.velocity.x, 0); //kill vertical momentum. only a set jump dist
-                r2d.velocity += Vector2.up * 5; //the 5 is variable. jump height
-            //if (coll.onWall && !coll.onGround)
+
+
+
+
+            if (r2d.velocity.y < 0)
+                r2d.velocity = new Vector2(r2d.velocity.x, r2d.velocity.y + jumpHeight * 
+                            Physics2D.gravity.y * (fallMultiplier - 1) * Time.deltaTime); //kill vertical momentum & set it to a vertical impulse
+            else if(r2d.velocity.y > 0 && inputy == 0) //wait this is never true
+            {
+        r2d.velocity = new Vector2(r2d.velocity.x, r2d.velocity.y + jumpHeight * 
+                            Physics2D.gravity.y * (lowJumpMultiplier- 1) * Time.deltaTime);            }
+        //if (coll.onWall && !coll.onGround)
             //    WallJump();
         }
         /* //"better jumping"
@@ -88,27 +124,6 @@ public class PlayerController : MonoBehaviour
             r2d.velocity += Vector2.up * Physics2D.gravity.y * (lowJumpMultiplier - 1) * Time.deltaTime;
         }
         */
-    }
-    // Called at fixed intervals regardless of frame rate, unlike the Update method.
-    void FixedUpdate()
-    {
-
-
-        updateCharState();
-
-        // X movement
-        xvelo = r2d.velocity.x;
-        if (moveDirection == 0 && System.Math.Abs(r2d.velocity.x) > .01f)
-            xvelo = -1 * moveDirection * maxSpeed * 50f;
-        else if (System.Math.Abs(r2d.velocity.x) <= .01f)
-            xvelo = 0;
-        else if (System.Math.Abs(r2d.velocity.x) < maxSpeed)
-            xvelo = moveDirection * maxSpeed * 0.1f;
-        else if (moveDirection != 0)
-            r2d.velocity = new Vector2(moveDirection * .1f, r2d.velocity.y);
-       
-       r2d.velocity = new Vector2(xvelo, r2d.velocity.y)
-        
     }
     private void updateCharState() {
         if (moveDirection < 0) spriteRenderer.flipX = true;
@@ -123,7 +138,7 @@ public class PlayerController : MonoBehaviour
             anim.SetInteger("CharState", (int) CharStates.idle);
             return;
         }
-            anim.SetInteger("CharState", (int) CharStates.walk);
+        anim.SetInteger("CharState", (int) CharStates.walk);
         return;
     }
 }
