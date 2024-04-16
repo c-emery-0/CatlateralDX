@@ -6,11 +6,14 @@ public class Collision : MonoBehaviour
 {
 
     [Header("Layers")]
-    public LayerMask groundLayer;
+    public LayerMask groundLayer ;
+    public LayerMask platformLayer  ;
 
     [Space]
 
     public bool onGround;
+    public bool onPlatform;
+    public Collider2D onPlatformColl;
     public bool onWall;
     public bool onRightWall;
     public bool onLeftWall;
@@ -19,21 +22,34 @@ public class Collision : MonoBehaviour
     [Space]
 
     [Header("Collision")]
-
-    public float collisionRadius = 1.7f;
-    public Vector2 bottomOffset, rightOffset, leftOffset;
+    
+    [Range(0.2f, 0.8f)]
+    public float collisionRadius;
+    [Range(0.2f, 5f)]
+    public float botScale, sideScale;
+    private Vector2 bottomOffset, rightOffset, leftOffset;
     private Color debugCollisionColor = Color.red;
 
     // Start is called before the first frame update
     void Start()
     {
         
+        groundLayer =  LayerMask.GetMask("Ground");
+        platformLayer  =  LayerMask.GetMask("Platform");
+        
     }
 
     // Update is called once per frame
     void Update()
     {  
-        onGround = Physics2D.OverlapCircle((Vector2)transform.position + bottomOffset, collisionRadius, groundLayer);
+        bottomOffset = botScale * Vector2.down;
+        rightOffset = sideScale * Vector2.right;
+        leftOffset = sideScale * Vector2.left;
+
+        onGround = Physics2D.OverlapCircle((Vector2)transform.position + bottomOffset, collisionRadius, groundLayer)
+        || Physics2D.OverlapCircle((Vector2)transform.position + bottomOffset, collisionRadius, platformLayer); 
+        onPlatformColl = Physics2D.OverlapCircle((Vector2)transform.position + bottomOffset, collisionRadius, platformLayer);
+        
         onWall = Physics2D.OverlapCircle((Vector2)transform.position + rightOffset, collisionRadius, groundLayer) 
             || Physics2D.OverlapCircle((Vector2)transform.position + leftOffset, collisionRadius, groundLayer);
 
@@ -47,8 +63,8 @@ public class Collision : MonoBehaviour
     {
         Gizmos.color = (onGround) ? Color.red : Color.green;
 
-        var positions =  bottomOffset + rightOffset + leftOffset ;
-
-        Gizmos.DrawWireSphere((Vector2)transform.position  + positions, collisionRadius);
+        Gizmos.DrawWireSphere((Vector2)transform.position  + bottomOffset, collisionRadius);
+        Gizmos.DrawWireSphere((Vector2)transform.position  + rightOffset, collisionRadius);
+        Gizmos.DrawWireSphere((Vector2)transform.position  + leftOffset, collisionRadius);
     }
 }

@@ -67,11 +67,16 @@ public class PlayerController : MonoBehaviour
         // Movement controls (left and right)
         inputx = Input.GetKey(KeyCode.LeftArrow) ? -1 : 0;
         inputx = Input.GetKey(KeyCode.RightArrow) ? 1 : inputx;
-        inputy = Input.GetButtonDown("Jump") ? 1 : 0;
+        inputy = Input.GetKey(KeyCode.DownArrow) ? -1 : 0;
+        inputy = Input.GetKey(KeyCode.UpArrow) ? 1 : inputy;
 
         moveDirection = inputx;
-
-
+        
+        
+        if (inputy < 0 && collision.onGround) {
+            Debug.Log(collision.onPlatformColl);
+            Physics2D.IgnoreCollision(collision.onPlatformColl, collider);
+        }
     }
     // Called at fixed intervals regardless of frame rate, unlike the Update method.
     void FixedUpdate()
@@ -95,11 +100,11 @@ public class PlayerController : MonoBehaviour
         r2d.velocity = new Vector2(xvelo, r2d.velocity.y);
         
 
-        if (!collision.onGround)
+        if (!( collision.onGround || collision.onPlatform))
             r2d.velocity = new Vector2(r2d.velocity.x, r2d.velocity.y + Physics2D.gravity.y * Time.deltaTime);
         else
             r2d.velocity = new Vector2(r2d.velocity.x, 0);
-        if (inputy == 1 && collision.onGround)
+        if (inputy == 1 && (collision.onGround || collision.onPlatform))
         {
 
 

@@ -1,4 +1,4 @@
-using System.Collections;
+/**using System.Collections;
 using System.Collections.Generic;
 using Newtonsoft.Json;
 
@@ -32,4 +32,4 @@ public class Controls : MonoBehaviour {
         current.Remove(button);
     }
 
-}
+}*/
