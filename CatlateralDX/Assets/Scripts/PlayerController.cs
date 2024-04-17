@@ -10,20 +10,22 @@ public class PlayerController : MonoBehaviour
     public float gravityScale = 1.5f;
     bool jump = false, jumpHeld = false;
  
-    public float fallMultiplier = 2.5f;
-    public float lowJumpMultiplier = 2f;
+    private float jumpStartTime = 1f;
+    private float jumpTime;
+    private bool isJumping;
     
     // Movement state machine:  0 is still, -1 is left, 1 is right
     float moveDirection = 0;
 
     // Object component references
-    Rigidbody2D r2d;
-    BoxCollider2D collider;
-    SpriteRenderer spriteRenderer;
-    Animator anim;
-    Collision collision;
+    private Rigidbody2D r2d;
+    private BoxCollider2D collider;
+    private SpriteRenderer spriteRenderer;
+    private Animator anim;
+    private Collision collision;
+    private GameObject currentOneWayPlatform;
+    private int inputx, inputy;
 
-    int inputx, inputy;
 
     // To get camera to follow Player: 
     //      1. Add/install Cinemachine from Unity package manager
@@ -73,9 +75,11 @@ public class PlayerController : MonoBehaviour
         moveDirection = inputx;
         
         
-        if (inputy < 0 && collision.onGround) {
-            Debug.Log(collision.onPlatformColl);
-            Physics2D.IgnoreCollision(collision.onPlatformColl, collider);
+        if (inputy < 0) {
+            if (currentOneWayPlatform != null)
+            {
+                StartCoroutine(DisableCollision());
+            }
         }
     }
     // Called at fixed intervals regardless of frame rate, unlike the Update method.
@@ -93,7 +97,7 @@ public class PlayerController : MonoBehaviour
         //if (System.Math.Abs(r2d.velocity.x) <= .01f)
         //    xvelo = 0;
         //else 
-        if (System.Math.Abs(r2d.velocity.x) < maxSpeed)
+        if (System.Math.Abs(r2d.velocity.x) < maxSpeed || System.Math.Abs(moveDirection + r2d.velocity.x) < System.Math.Abs(r2d.velocity.x  ))
             xvelo += moveDirection * maxSpeed * 0.1f;
         if (moveDirection == 0) 
             xvelo = 0;
@@ -101,34 +105,53 @@ public class PlayerController : MonoBehaviour
         
 
         if (!( collision.onGround || collision.onPlatform))
-            r2d.velocity = new Vector2(r2d.velocity.x, r2d.velocity.y + Physics2D.gravity.y * Time.deltaTime);
+            {r2d.velocity = new Vector2(r2d.velocity.x, r2d.velocity.y + Physics2D.gravity.y * Time.deltaTime);}
         else
-            r2d.velocity = new Vector2(r2d.velocity.x, 0);
-        if (inputy == 1 && (collision.onGround || collision.onPlatform))
+            {r2d.velocity = new Vector2(r2d.velocity.x, 0);}
+        
+        Jump();
+    }
+    private void OnCollisionEnter2D(Collision2D collision)
+    {
+        if (collision.gameObject.CompareTag("OneWayPlatform"))
         {
-
-
-
-
-            if (r2d.velocity.y < 0)
-                r2d.velocity = new Vector2(r2d.velocity.x, r2d.velocity.y + jumpHeight * 
-                            Physics2D.gravity.y * (fallMultiplier - 1) * Time.deltaTime); //kill vertical momentum & set it to a vertical impulse
-            else if(r2d.velocity.y > 0 && inputy == 0) //wait this is never true
-            {
-        r2d.velocity = new Vector2(r2d.velocity.x, r2d.velocity.y + jumpHeight * 
-                            Physics2D.gravity.y * (lowJumpMultiplier- 1) * Time.deltaTime);            }
-        //if (coll.onWall && !coll.onGround)
-            //    WallJump();
+            currentOneWayPlatform = collision.gameObject;
         }
-        /* //"better jumping"
-        if(r2d.velocity.y < 0)
+    }
+
+    private void OnCollisionExit2D(Collision2D collision)
+    {
+        if (collision.gameObject.CompareTag("OneWayPlatform"))
         {
-            r2d.velocity += Vector2.up * Physics2D.gravity.y * (fallMultiplier - 1) * Time.deltaTime;
-        }else if(r2d.velocity.y > 0 && !Input.GetButton("Jump"))
-        {
-            r2d.velocity += Vector2.up * Physics2D.gravity.y * (lowJumpMultiplier - 1) * Time.deltaTime;
+            currentOneWayPlatform = null;
         }
-        */
+    }
+
+    private IEnumerator DisableCollision()
+    {
+        BoxCollider2D platformCollider = currentOneWayPlatform.GetComponent<BoxCollider2D>();
+        Debug.Log("Disabled");
+        Physics2D.IgnoreCollision(collider, platformCollider);
+        yield return new WaitForSeconds(0.25f);
+        Physics2D.IgnoreCollision(collider, platformCollider, false);
+    }
+ 
+    void Jump() {
+        if (collision.onGround && Input.GetButtonDown("Jump")) {
+            isJumping = true;
+            jumpTime = jumpStartTime;
+            r2d.velocity = Vector2.up * jumpHeight;
+        }
+        if (isJumping && Input.GetButtonDown("Jump")) {
+            if (jumpTime <= 0) 
+                isJumping = false;
+            else {
+                r2d.velocity = Vector2.up * jumpHeight;
+                jumpTime -= Time.deltaTime;
+            }
+        }
+        if (Input.GetButtonUp("Jump"))
+            isJumping = false;
     }
     private void updateCharState() {
         if (moveDirection < 0) spriteRenderer.flipX = true;
