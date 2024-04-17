@@ -12,7 +12,6 @@ public class Collision : MonoBehaviour
     [Space]
 
     public bool onGround;
-    public bool onPlatform;
     public Collider2D onPlatformColl;
     public bool onWall;
     public bool onRightWall;
@@ -46,8 +45,7 @@ public class Collision : MonoBehaviour
         rightOffset = sideScale * Vector2.right;
         leftOffset = sideScale * Vector2.left;
 
-        onGround = Physics2D.OverlapCircle((Vector2)transform.position + bottomOffset, collisionRadius, groundLayer)
-        || Physics2D.OverlapCircle((Vector2)transform.position + bottomOffset, collisionRadius, platformLayer); 
+        onGround = Physics2D.OverlapCircle((Vector2)transform.position + bottomOffset, collisionRadius, groundLayer);
         onPlatformColl = Physics2D.OverlapCircle((Vector2)transform.position + bottomOffset, collisionRadius, platformLayer);
         
         onWall = Physics2D.OverlapCircle((Vector2)transform.position + rightOffset, collisionRadius, groundLayer) 

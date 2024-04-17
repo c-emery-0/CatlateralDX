@@ -6,11 +6,9 @@ public class PlayerController : MonoBehaviour
 {
     // Movement mechanics variables
     public float maxSpeed = 10f;
-    public float jumpHeight = 15f;
-    public float gravityScale = 1.5f;
-    bool jump = false, jumpHeld = false;
+    public float jumpHeight = 6f;
  
-    private float jumpStartTime = 1f;
+    private float jumpStartTime = .05f;
     private float jumpTime;
     private bool isJumping;
     
@@ -67,10 +65,8 @@ public class PlayerController : MonoBehaviour
     void Update()
     {
         // Movement controls (left and right)
-        inputx = Input.GetKey(KeyCode.LeftArrow) ? -1 : 0;
-        inputx = Input.GetKey(KeyCode.RightArrow) ? 1 : inputx;
-        inputy = Input.GetKey(KeyCode.DownArrow) ? -1 : 0;
-        inputy = Input.GetKey(KeyCode.UpArrow) ? 1 : inputy;
+        inputx = (int) Input.GetAxisRaw("Horizontal");
+        inputy = (int) Input.GetAxisRaw("Vertical");
 
         moveDirection = inputx;
         
@@ -87,16 +83,7 @@ public class PlayerController : MonoBehaviour
     {
         updateCharState();
         
-        // Apply movement velocity in the x direction
-        //r2d.velocity = new Vector2((moveDirection) * maxSpeed, r2d.velocity.y);
-
-        // X movement
-        //movedir is 0 if (collision.onGround || r2d.velocity.magnitude < 0.01f)
-
         float xvelo = r2d.velocity.x;
-        //if (System.Math.Abs(r2d.velocity.x) <= .01f)
-        //    xvelo = 0;
-        //else 
         if (System.Math.Abs(r2d.velocity.x) < maxSpeed || System.Math.Abs(moveDirection + r2d.velocity.x) < System.Math.Abs(r2d.velocity.x  ))
             xvelo += moveDirection * maxSpeed * 0.1f;
         if (moveDirection == 0) 
@@ -104,9 +91,11 @@ public class PlayerController : MonoBehaviour
         r2d.velocity = new Vector2(xvelo, r2d.velocity.y);
         
 
-        if (!( collision.onGround || collision.onPlatform))
+        if (!( collision.onGround || currentOneWayPlatform != null))
+            //falling
             {r2d.velocity = new Vector2(r2d.velocity.x, r2d.velocity.y + Physics2D.gravity.y * Time.deltaTime);}
         else
+            //onGround
             {r2d.velocity = new Vector2(r2d.velocity.x, 0);}
         
         Jump();
@@ -129,30 +118,35 @@ public class PlayerController : MonoBehaviour
 
     private IEnumerator DisableCollision()
     {
-        BoxCollider2D platformCollider = currentOneWayPlatform.GetComponent<BoxCollider2D>();
-        Debug.Log("Disabled");
-        Physics2D.IgnoreCollision(collider, platformCollider);
-        yield return new WaitForSeconds(0.25f);
-        Physics2D.IgnoreCollision(collider, platformCollider, false);
+        BoxCollider2D platColl = currentOneWayPlatform.GetComponent<BoxCollider2D>();
+        Physics2D.IgnoreCollision(collider, platColl);
+        yield return new WaitForSeconds(0.5f);
+        Physics2D.IgnoreCollision(collider, platColl, false);
     }
  
     void Jump() {
-        if (collision.onGround && Input.GetButtonDown("Jump")) {
+        Debug.Log("jump 1");
+        if ((collision.onGround || currentOneWayPlatform != null) && inputy > 0) {
+            Debug.Log("Jump 2");
             isJumping = true;
             jumpTime = jumpStartTime;
-            r2d.velocity = Vector2.up * jumpHeight;
+            r2d.velocity = new Vector2(r2d.velocity.x, jumpHeight);
         }
-        if (isJumping && Input.GetButtonDown("Jump")) {
+        if (isJumping && inputy > 0) {
             if (jumpTime <= 0) 
                 isJumping = false;
             else {
-                r2d.velocity = Vector2.up * jumpHeight;
+                Debug.Log("Jump 3 (held)");
+                r2d.velocity = new Vector2(r2d.velocity.x, r2d.velocity.y + jumpHeight);
                 jumpTime -= Time.deltaTime;
             }
         }
-        if (Input.GetButtonUp("Jump"))
+        if (inputy <= 0) {
+            Debug.Log("Jump 4 (finished)");
             isJumping = false;
+        }
     }
+
     private void updateCharState() {
         if (moveDirection < 0) spriteRenderer.flipX = true;
         if (moveDirection > 0) spriteRenderer.flipX = false;
