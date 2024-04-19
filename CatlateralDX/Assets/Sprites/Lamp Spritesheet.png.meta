@@ -121,7 +121,112 @@ TextureImporter:
     forceMaximumCompressionQuality_BC6H_BC7: 0
   spriteSheet:
     serializedVersion: 2
-    sprites: []
+    sprites:
+    - serializedVersion: 2
+      name: Lamp Spritesheet_0
+      rect:
+        serializedVersion: 2
+        x: 0
+        y: 1254
+        width: 500
+        height: 500
+      alignment: 0
+      pivot: {x: 0.5, y: 0.5}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      outline: []
+      physicsShape: []
+      tessellationDetail: 0
+      bones: []
+      spriteID: 35a2a672451f9e646971cc4667279ba4
+      internalID: 1951503019
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: Lamp Spritesheet_1
+      rect:
+        serializedVersion: 2
+        x: 500
+        y: 1254
+        width: 500
+        height: 500
+      alignment: 0
+      pivot: {x: 0.5, y: 0.5}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      outline: []
+      physicsShape: []
+      tessellationDetail: 0
+      bones: []
+      spriteID: f77da56b1df453e4983e6e9b8ff7a93c
+      internalID: -538630673
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: Lamp Spritesheet_2
+      rect:
+        serializedVersion: 2
+        x: 1000
+        y: 1254
+        width: 500
+        height: 500
+      alignment: 0
+      pivot: {x: 0.5, y: 0.5}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      outline: []
+      physicsShape: []
+      tessellationDetail: 0
+      bones: []
+      spriteID: 220ded3540cf0a94ba4f5ad5425785da
+      internalID: -1533418739
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: Lamp Spritesheet_3
+      rect:
+        serializedVersion: 2
+        x: 0
+        y: 754
+        width: 500
+        height: 500
+      alignment: 0
+      pivot: {x: 0.5, y: 0.5}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      outline: []
+      physicsShape: []
+      tessellationDetail: 0
+      bones: []
+      spriteID: d55982e3048da59409bc0f1a34e32c7e
+      internalID: 1010876274
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: Lamp Spritesheet_5
+      rect:
+        serializedVersion: 2
+        x: 0
+        y: 254
+        width: 500
+        height: 500
+      alignment: 0
+      pivot: {x: 0.5, y: 0.5}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      outline: []
+      physicsShape: []
+      tessellationDetail: 0
+      bones: []
+      spriteID: c63c709d0117ec241895da715a8e9424
+      internalID: -1837496324
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
     outline: []
     physicsShape: []
     bones: []
@@ -132,7 +237,13 @@ TextureImporter:
     edges: []
     weights: []
     secondaryTextures: []
-    nameFileIdTable: {}
+    nameFileIdTable:
+      Lamp Spritesheet_0: 1951503019
+      Lamp Spritesheet_1: -538630673
+      Lamp Spritesheet_2: -1533418739
+      Lamp Spritesheet_3: 1010876274
+      Lamp Spritesheet_4: 975232397
+      Lamp Spritesheet_5: -1837496324
   mipmapLimitGroupName: 
   pSDRemoveMatte: 0
   userData: 

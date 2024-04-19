@@ -11,7 +11,8 @@ public class PlayerController : MonoBehaviour
     private float jumpStartTime = .05f;
     private float jumpTime;
     private bool isJumping;
-    
+    private bool canJump = true;
+
     // Movement state machine:  0 is still, -1 is left, 1 is right
     float moveDirection = 0;
 
@@ -22,6 +23,7 @@ public class PlayerController : MonoBehaviour
     private Animator anim;
     private Collision collision;
     private GameObject currentOneWayPlatform;
+
     private int inputx, inputy;
 
 
@@ -55,8 +57,6 @@ public class PlayerController : MonoBehaviour
         // Ensures that all collisions are detected when a Rigidbody2D moves.
         r2d.collisionDetectionMode = CollisionDetectionMode2D.Continuous;
 
-        // Apply gravity scale to Player's Rigidbody2D
-        r2d.gravityScale = gravityScale;
 
     }
 
@@ -91,7 +91,7 @@ public class PlayerController : MonoBehaviour
         r2d.velocity = new Vector2(xvelo, r2d.velocity.y);
         
 
-        if (!( collision.onGround || currentOneWayPlatform != null))
+        if (!( collision.onGround && currentOneWayPlatform != null))
             //falling
             {r2d.velocity = new Vector2(r2d.velocity.x, r2d.velocity.y + Physics2D.gravity.y * Time.deltaTime);}
         else
@@ -120,15 +120,20 @@ public class PlayerController : MonoBehaviour
     {
         BoxCollider2D platColl = currentOneWayPlatform.GetComponent<BoxCollider2D>();
         Physics2D.IgnoreCollision(collider, platColl);
-        yield return new WaitForSeconds(0.5f);
+        yield return new WaitForSeconds(0.75f);
         Physics2D.IgnoreCollision(collider, platColl, false);
+    }
+    private IEnumerator JumpCooldown()
+    {
+        canJump = false;
+        yield return new WaitForSeconds(0.75f);
+        canJump = true;
     }
  
     void Jump() {
-        Debug.Log("jump 1");
-        if ((collision.onGround || currentOneWayPlatform != null) && inputy > 0) {
-            Debug.Log("Jump 2");
+        if (canJump && (collision.onGround || currentOneWayPlatform != null) && inputy > 0) {
             isJumping = true;
+            StartCoroutine(JumpCooldown());
             jumpTime = jumpStartTime;
             r2d.velocity = new Vector2(r2d.velocity.x, jumpHeight);
         }
@@ -136,13 +141,11 @@ public class PlayerController : MonoBehaviour
             if (jumpTime <= 0) 
                 isJumping = false;
             else {
-                Debug.Log("Jump 3 (held)");
                 r2d.velocity = new Vector2(r2d.velocity.x, r2d.velocity.y + jumpHeight);
                 jumpTime -= Time.deltaTime;
             }
         }
         if (inputy <= 0) {
-            Debug.Log("Jump 4 (finished)");
             isJumping = false;
         }
     }
