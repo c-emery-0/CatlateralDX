@@ -1,18 +1,20 @@
     using UnityEngine;
     using UnityEngine.UI;
+    using TMPro;
 
     public class PointCounter : MonoBehaviour
     {
         [SerializeField] 
-        private TextMeshPro _title;
+        private TextMeshProUGUI titletext;
         public int points = 0;
 
-        private Start()‌{
-            _title = GetComponent<TextMeshPro>();
+        void Start() {
+            titletext.text = "points: "+points‌;
         }
         public void UpdatePoints(int pts)
         {
             points += pts;
-            _title.text = "points: "+(points‌);
+            titletext.text = "points: "+points‌;
+            Debug.Log(titletext.text);
         }
     }
