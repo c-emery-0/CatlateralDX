@@ -18,7 +18,7 @@ public class PlayerController : MonoBehaviour
 
     // Object component references
     private Rigidbody2D r2d;
-    private BoxCollider2D collider;
+    private CapsuleCollider2D collider;
     private SpriteRenderer spriteRenderer;
     private Animator anim;
     private Collision collision;
@@ -46,7 +46,7 @@ public class PlayerController : MonoBehaviour
     {
         // initialize object component variables
         r2d = GetComponent<Rigidbody2D>();
-        collider = GetComponent<BoxCollider2D>();
+        collider = GetComponent<CapsuleCollider2D>();
         spriteRenderer = GetComponent<SpriteRenderer>();
         anim = GetComponent<Animator>();
         collision = GetComponent<Collision>();
