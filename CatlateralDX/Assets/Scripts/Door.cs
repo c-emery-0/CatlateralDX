@@ -9,39 +9,40 @@ public class Door : MonoBehaviour
 
     private SpriteRenderer spriteRenderer;
     
-    private bool isOpen = false;
+    private bool isOpen = true;
 
     // Start is called before the first frame update
     void Start()
     {
         spriteRenderer = GetComponent<SpriteRenderer>();
 
-        toggleObjectsBehindDoor(isOpen);
+        toggleObjectsBehindDoor();
     }
 
     // Update is called once per frame
     void Update()
     {
         if (Input.GetKeyDown(KeyCode.C)) {
-            isOpen = !isOpen;
-            toggleObjectsBehindDoor(!isOpen);
+            toggleObjectsBehindDoor();
         }
     }
 
-    void toggleObjectsBehindDoor(bool state) {
-        //state is rn false if we want to be opening doors rn
-        spriteRenderer.sprite = (state) ? doorOpen : doorClose;
+    void toggleObjectsBehindDoor() {
+        isOpen = !isOpen;
+
+        spriteRenderer.sprite = (isOpen) ? doorOpen : doorClose;
 
         foreach (GameObject obj in objectsBehindDoor) {
-            obj.GetComponent<Collider2D>().enabled = state;
+            Collider2D[] colliders = obj.GetComponents<Collider2D>();
+            foreach (Collider2D coll in colliders) {
+                coll.enabled = isOpen;
+            }
+
+            obj.GetComponent<Transform>().position = new Vector3(obj.GetComponent<Transform>().position.x, 
+                                obj.GetComponent<Transform>().position.y, (isOpen) ? -2 : 0); //if z=-2, then objects are in front of the door
+
             try {
-                obj.GetComponent<Rigidbody2D>().isKinematic = !state;
-                if (!state) {
-                    obj.GetComponent<Rigidbody2D>().excludeLayers = LayerMask.GetMask("None");
-                }
-                else {
-                    obj.GetComponent<Rigidbody2D>().excludeLayers = LayerMask.GetMask("Player");
-                }
+                obj.GetComponent<Rigidbody2D>().isKinematic = !isOpen;
             } catch {}
         }
 
