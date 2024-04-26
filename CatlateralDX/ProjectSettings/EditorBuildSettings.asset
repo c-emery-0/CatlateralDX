@@ -6,6 +6,12 @@ EditorBuildSettings:
   serializedVersion: 2
   m_Scenes:
   - enabled: 1
-    path: Assets/Scenes/Game.unity
+    path: Assets/Scenes/Start.unity
+    guid: 0ecf488d0d0eaf2f29b2714504bfacb5
+  - enabled: 1
+    path: Assets/Scenes/Credits.unity
+    guid: c3307659ddae64ff886d45ad1871e571
+  - enabled: 1
+    path: Assets/Scenes/Level_Bathroom.unity
     guid: 2cda990e2423bbf4892e6590ba056729
   m_configObjects: {}

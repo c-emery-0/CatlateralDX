@@ -22,20 +22,26 @@ public class Door : MonoBehaviour
     // Update is called once per frame
     void Update()
     {
-        if (Input.GetKey("C")) {
+        if (Input.GetKeyDown(KeyCode.C)) {
             isOpen = !isOpen;
             toggleObjectsBehindDoor(!isOpen);
         }
     }
 
     void toggleObjectsBehindDoor(bool state) {
-        
+        //state is rn false if we want to be opening doors rn
         spriteRenderer.sprite = (state) ? doorOpen : doorClose;
 
         foreach (GameObject obj in objectsBehindDoor) {
-            obj.GetComponent<Collider2D>().enabled=state;
+            obj.GetComponent<Collider2D>().enabled = state;
             try {
-                obj.GetComponent<Rigidbody2D>().excludeLayers = "Player";
+                obj.GetComponent<Rigidbody2D>().isKinematic = !state;
+                if (!state) {
+                    obj.GetComponent<Rigidbody2D>().excludeLayers = LayerMask.GetMask("None");
+                }
+                else {
+                    obj.GetComponent<Rigidbody2D>().excludeLayers = LayerMask.GetMask("Player");
+                }
             } catch {}
         }
 
