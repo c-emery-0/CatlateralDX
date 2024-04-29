@@ -17,7 +17,8 @@ public class SimpleObject : MonoBehaviour
     // Update is called once per frame
     void Update()
     {
-        
+        effector = GetComponent<PlatformEffector2D>();
+        GetComponent<Transform>().rotation.z
     }
 
     
