@@ -7,6 +7,7 @@ public class Door : MonoBehaviour
     [SerializeField] List<GameObject> objectsBehindDoor;
     [SerializeField] Sprite doorClose, doorOpen;
 
+
     private SpriteRenderer spriteRenderer;
     
     private bool isOpen = true;
@@ -27,8 +28,10 @@ public class Door : MonoBehaviour
         if (Input.GetKeyDown(KeyCode.C)) {
             toggleObjectsBehindDoor();
         }
+        
     }
 
+    
     void toggleObjectsBehindDoor() {
         isOpen = !isOpen;
 
@@ -48,9 +51,24 @@ public class Door : MonoBehaviour
             try {
 
                 obj.GetComponent<Rigidbody2D>().isKinematic = !isOpen;
+
+                if (!isOpen) {
+                    obj.GetComponent<Rigidbody2D>().velocity = new Vector2(0, 0);
+                    obj.GetComponent<Rigidbody2D>().angularVelocity = 0;
+                }
             } catch {}
         }
 
+    
+    
+    }
+    
+    public static Bounds Get2DBounds(Bounds aBounds)
+    {
+        var ext = aBounds.extents;
+        ext.z = float.PositiveInfinity;
+        aBounds.extents = ext;
+        return aBounds;
     }
 
     private void OnCollisionStay2D(Collision2D collision) {
@@ -59,12 +77,14 @@ public class Door : MonoBehaviour
         Collider2D obj = collision.gameObject.GetComponent<Collider2D>();
         Collider2D doorCollider = GetComponent<Collider2D>();
         
-        if (doorCollider.bounds.Contains(obj.bounds.min) 
+
+        if (Get2DBounds(doorCollider.bounds).Contains(obj.bounds.min)
+                && Get2DBounds(doorCollider.bounds).Contains(obj.bounds.max)
                 && ! objectsBehindDoor.Contains(collision.gameObject)) {
             objectsBehindDoor.Add(collision.gameObject);
         }
-        else if ((!doorCollider.bounds.Contains(obj.bounds.min) 
-                || !doorCollider.bounds.Contains(obj.bounds.max))
+        else if ((!Get2DBounds(doorCollider.bounds).Contains(obj.bounds.min)
+                || !Get2DBounds(doorCollider.bounds).Contains(obj.bounds.max)) 
                 && objectsBehindDoor.Contains(collision.gameObject)) {
             objectsBehindDoor.Remove(collision.gameObject);
         } 
