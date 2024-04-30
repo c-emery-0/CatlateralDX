@@ -5,17 +5,23 @@ using UnityEngine;
 public class SimpleObject : MonoBehaviour
 {
 
+    [SerializeField] AudioClip[] collisionSounds;
+    [SerializeField] AudioClip[] breakSounds;
+
     private bool knockedOver = false;
     private bool broken = false;
     public PointCounter pointCounter;
-    public GameObject player;
+    private GameObject player;
+    private AudioSource audiosource;
     private bool followPlayer = false;
     private float moveSpeed = 100f;
+
 
     // Start is called before the first frame update
     void Start()
     {
         player = GameObject.Find("Player");
+
     }
 
     // Update is called once per frame
@@ -28,7 +34,8 @@ public class SimpleObject : MonoBehaviour
 
         if (followPlayer) {
             Vector2 pos = GetComponent<Transform>().position;
-            Vector2 direction = (pos - new Vector2(player.GetComponent<Transform>().position)).normalized;
+            Vector2 playerpos = new Vector2(player.GetComponent<Transform>().position.x, player.GetComponent<Transform>().position.y);
+            Vector2 direction = (pos - playerpos).normalized;
             GetComponent<Rigidbody2D>().velocity = new Vector2(direction.x * moveSpeed, direction.y * moveSpeed);
         }
     }
@@ -36,12 +43,22 @@ public class SimpleObject : MonoBehaviour
     
     private void OnCollisionEnter2D(Collision2D collision)
     {
-        if (collision.gameObject.CompareTag("Player")) {
+        if (collision.gameObject.CompareTag("Player") && !knockedOver) {
+
+            int randNum = (int) UnityEngine.Random.value * collisionSounds.Length;
+            audiosource.clip = collisionSounds[randNum];
+            audiosource.Play();
+
             pointCounter.UpdatePoints(10);    
             knockedOver = true;
         }
-        /**
-        if (collision.gameObject.CompareTag("Player") && ! collision.gameObject.canDash) {
+        /*
+        if (collision.gameObject.CompareTag("Player") && !broken && !collision.gameObject.canDash) {
+            
+            int randNum = (int) UnityEngine.Random.value * breakSounds.Length;
+            audiosource.clip = breakSounds[randNum];
+            audiosource.Play();
+
             pointCounter.UpdatePoints(50);    
             broken = true;
             StartCoroutine(breakObject());
@@ -52,10 +69,10 @@ public class SimpleObject : MonoBehaviour
     private IEnumerator breakObject() {
         GetComponent<ParticleSystem>().Play();
         yield return new WaitForSeconds(2f);
-        Destroy();
+        Destroy(gameObject);
     }
 
-    public void Grabb() {
+    public void Grab() {
 
         Collider2D[] colliders = GetComponents<Collider2D>();
         foreach (Collider2D coll in colliders) {

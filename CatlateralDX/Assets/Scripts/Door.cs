@@ -7,9 +7,15 @@ public class Door : MonoBehaviour
     [SerializeField] List<GameObject> objectsBehindDoor;
     [SerializeField] Sprite doorClose, doorOpen;
 
+    [Space]
 
-    private SpriteRenderer spriteRenderer;
+    [SerializeField] AudioClip open_audio;
+    [SerializeField] AudioClip close_audio;
     
+    private SpriteRenderer spriteRenderer;
+    private AudioSource audiosource;
+
+
     private bool isOpen = true;
 
     private int fuck;
@@ -18,25 +24,26 @@ public class Door : MonoBehaviour
     void Start()
     {
         spriteRenderer = GetComponent<SpriteRenderer>();
-
-        toggleObjectsBehindDoor();
+        audiosource = GetComponent<AudioSource>();
+        toggleObjectsBehindDoor(false);
     }
 
     // Update is called once per frame
     void Update()
     {
         if (Input.GetKeyDown(KeyCode.C)) {
-            toggleObjectsBehindDoor();
+            toggleObjectsBehindDoor(true);
         }
         
     }
 
     
-    void toggleObjectsBehindDoor() {
+    void toggleObjectsBehindDoor(bool playAudio) {
         isOpen = !isOpen;
 
         spriteRenderer.sprite = (isOpen) ? doorOpen : doorClose;
-
+        
+        //toggle physics
         foreach (GameObject obj in objectsBehindDoor) {
             Collider2D[] colliders = obj.GetComponents<Collider2D>();
             foreach (Collider2D coll in colliders) {
@@ -60,7 +67,13 @@ public class Door : MonoBehaviour
         }
 
     
-    
+        //sound
+        if (isOpen && playAudio) {
+            audiosource.clip = open_audio;
+        } else (playAudio) {
+            audiosource.clip = close_audio;
+        }
+        audiosource.Play();
     }
     
     public static Bounds Get2DBounds(Bounds aBounds)
@@ -88,5 +101,12 @@ public class Door : MonoBehaviour
                 && objectsBehindDoor.Contains(collision.gameObject)) {
             objectsBehindDoor.Remove(collision.gameObject);
         } 
+    }
+
+    public void Grab() {
+
+    }
+    public void Ungrab() {
+    
     }
 }

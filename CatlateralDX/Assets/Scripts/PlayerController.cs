@@ -164,7 +164,7 @@ public class PlayerController : MonoBehaviour
 
         //look for closest collider nearProps
         float oldDistance = float.PositiveInfinity;
-        Collider2D closestObj;
+        Collider2D closestObj = null;
         foreach (Collider2D obj in collision.nearProps)
         {
             float dist = Vector2.Distance(this.gameObject.transform.position, obj.gameObject.transform.position);
@@ -182,12 +182,12 @@ public class PlayerController : MonoBehaviour
 
         //if collider is a regular prop / SimpleObject, set position to the same stuff as followMouse and disable collider
 
-        grabbedObject = closestObj.GameObject;
+        grabbedObject = closestObj.gameObject;
         try {
-            grabbedObject.GetComponent<SimpleObject>.Grab();
+            grabbedObject.GetComponent<SimpleObject>().Grab();
         }
         catch {
-            grabbedObject.GetComponent<Door>.Grab();
+            grabbedObject.GetComponent<Door>().Grab();
         }
     }
 
