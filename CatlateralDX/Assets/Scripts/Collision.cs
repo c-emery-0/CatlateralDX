@@ -8,11 +8,14 @@ public class Collision : MonoBehaviour
     [Header("Layers")]
     public LayerMask groundLayer ;
     public LayerMask platformLayer  ;
+    public LayerMask propLayer  ;
 
     [Space]
 
     public bool onGround;
+    public bool onProp;
     public Collider2D onPlatformColl;
+    public Collider2D[] nearProps;
     public bool onWall;
     public bool onRightWall;
     public bool onLeftWall;
@@ -24,6 +27,8 @@ public class Collision : MonoBehaviour
     
     [Range(0.2f, 0.8f)]
     public float collisionRadius;
+    [Range(0.2f, 0.8f)]
+    public float grabRadius;
     [Range(0.2f, 5f)]
     public float botScale, sideScale;
     private Vector2 bottomOffset, rightOffset, leftOffset;
@@ -35,6 +40,7 @@ public class Collision : MonoBehaviour
         
         groundLayer =  LayerMask.GetMask("Ground");
         platformLayer  =  LayerMask.GetMask("Platform");
+        propLayer  =  LayerMask.GetMask("Props");
         
     }
 
@@ -46,8 +52,11 @@ public class Collision : MonoBehaviour
         leftOffset = sideScale * Vector2.left;
 
         onGround = Physics2D.OverlapCircle((Vector2)transform.position + bottomOffset, collisionRadius, groundLayer);
+        onProp = Physics2D.OverlapCircle((Vector2)transform.position + bottomOffset, collisionRadius, propLayer);
         onPlatformColl = Physics2D.OverlapCircle((Vector2)transform.position + bottomOffset, collisionRadius, platformLayer);
         
+        nearProps = Physics2D.OverlapCircleAll((Vector2)transform.position, grabRadius, propLayer);
+
         onWall = Physics2D.OverlapCircle((Vector2)transform.position + rightOffset, collisionRadius, groundLayer) 
             || Physics2D.OverlapCircle((Vector2)transform.position + leftOffset, collisionRadius, groundLayer);
 

@@ -13,6 +13,8 @@ public class PlayerController : MonoBehaviour
     private bool isJumping;
     private bool canJump = true;
 
+    private GameObject grabbedObject;
+
     // Movement state machine:  0 is still, -1 is left, 1 is right
     float moveDirection = 0;
 
@@ -77,6 +79,10 @@ public class PlayerController : MonoBehaviour
                 StartCoroutine(DisableCollision());
             }
         }
+        if (Input.GetKeyDown(KeyCode.C) || Input.GetKeyUp(KeyCode.C)) {
+            toggleGrab();
+        }
+
     }
     // Called at fixed intervals regardless of frame rate, unlike the Update method.
     void FixedUpdate()
@@ -131,7 +137,7 @@ public class PlayerController : MonoBehaviour
     }
  
     void Jump() {
-        if (canJump && (collision.onGround || currentOneWayPlatform != null) && inputy > 0) {
+        if (canJump && (collision.onGround || collision.onProp || currentOneWayPlatform != null) && inputy > 0) {
             isJumping = true;
             StartCoroutine(JumpCooldown());
             jumpTime = jumpStartTime;
@@ -150,12 +156,47 @@ public class PlayerController : MonoBehaviour
         }
     }
 
+    void toggleGrab() {
+        if (grabbedObject) {
+            grabbedObject.GetComponent<SimpleObject>().Ungrab();
+            return;
+        }
+
+        //look for closest collider nearProps
+        float oldDistance = float.PositiveInfinity;
+        Collider2D closestObj;
+        foreach (Collider2D obj in collision.nearProps)
+        {
+            float dist = Vector2.Distance(this.gameObject.transform.position, obj.gameObject.transform.position);
+            if (dist < oldDistance && (obj.gameObject.CompareTag("Prop") || obj.gameObject.CompareTag("Lever")))
+            {
+                closestObj = obj;
+                oldDistance = dist;
+            }
+        }
+
+        if (closestObj == null) return;
+
+        //if collider is A Door‌ Handle (ie. "Lever"), tell door script to do something
+        //can therefore extend to say. toilet handle.
+
+        //if collider is a regular prop / SimpleObject, set position to the same stuff as followMouse and disable collider
+
+        grabbedObject = closestObj.GameObject;
+        try {
+            grabbedObject.GetComponent<SimpleObject>.Grab();
+        }
+        catch {
+            grabbedObject.GetComponent<Door>.Grab();
+        }
+    }
+
     private void updateCharState() {
         if (moveDirection < 0) spriteRenderer.flipX = true;
         if (moveDirection > 0) spriteRenderer.flipX = false;
 
 
-        if (r2d.velocity.y != 0) {
+        if (System.Math.Abs(r2d.velocity.y) > 0.25f || !canJump) {
             anim.SetInteger("CharState", (int) CharStates.jump);
             return;
         }
