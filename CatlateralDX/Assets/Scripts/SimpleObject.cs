@@ -5,12 +5,14 @@ using UnityEngine;
 public class SimpleObject : MonoBehaviour
 {
 
-    [SerializeField] AudioClip[] collisionSounds;
+    [SerializeField] AudioClip[] collisionSounds;    
+    [SerializeField] AudioClip collisionSound;
+
     [SerializeField] AudioClip[] breakSounds;
 
     private bool knockedOver = false;
     private bool broken = false;
-    public PointCounter pointCounter;
+    private PointCounter pointCounter;
     private GameObject player;
     private AudioSource audiosource;
     private bool followPlayer = false;
@@ -21,6 +23,8 @@ public class SimpleObject : MonoBehaviour
     void Start()
     {
         player = GameObject.Find("Player");
+        pointCounter = GameObject.Find("PointCounter").GetComponent<PointCounter>();
+        audiosource = GetComponent<AudioSource>();
 
     }
 
@@ -44,11 +48,12 @@ public class SimpleObject : MonoBehaviour
     private void OnCollisionEnter2D(Collision2D collision)
     {
         if (collision.gameObject.CompareTag("Player") && !knockedOver) {
-
             int randNum = (int) UnityEngine.Random.value * collisionSounds.Length;
-            audiosource.clip = collisionSounds[randNum];
-            audiosource.Play();
 
+            if (collisionSounds.Length > 0) {
+            audiosource.clip = collisionSounds[randNum];
+            audiosource.Play();}
+            StartCoroutine(breakObject());
             pointCounter.UpdatePoints(10);    
             knockedOver = true;
         }
@@ -66,11 +71,25 @@ public class SimpleObject : MonoBehaviour
 
     }
 
-    private IEnumerator breakObject() {
-        GetComponent<ParticleSystem>().Play();
-        yield return new WaitForSeconds(2f);
-        Destroy(gameObject);
+    public void toggleObjectBehindDoor(bool isOpen) {
+        Collider2D[] colliders = GetComponents<Collider2D>();
+            foreach (Collider2D coll in colliders) {
+                //coll.forceReceiveLayers = (isOpen) ? LayerMask.NameToLayer("Everything") : LayerMask.GetMask("Nothing");
+                //coll.forceSendLayers = (isOpen) ? LayerMask.NameToLayer("Everything") : LayerMask.GetMask("Nothing");
+                coll.excludeLayers = (isOpen) ? LayerMask.NameToLayer("Nothing") : LayerMask.GetMask("Player");
+            }
+
+            try {
+
+                GetComponent<Rigidbody2D>().isKinematic = !isOpen;
+
+                if (!isOpen) {
+                    GetComponent<Rigidbody2D>().velocity = new Vector2(0, 0);
+                    GetComponent<Rigidbody2D>().angularVelocity = 0;
+                }
+            } catch {}
     }
+
 
     public void Grab() {
 
@@ -99,5 +118,11 @@ public class SimpleObject : MonoBehaviour
                             GetComponent<Transform>().position.y, 0); //set obj to normal :)
 
         followPlayer = false;
+    }
+
+    private IEnumerator breakObject() {
+        GetComponent<ParticleSystem>().Play();
+        yield return new WaitForSeconds(2f);
+        Destroy(gameObject);
     }
 }
