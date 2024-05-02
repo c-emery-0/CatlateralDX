@@ -108,8 +108,8 @@ MonoBehaviour:
   - {fileID: 0}
   doorClose: {fileID: -525200666, guid: 8dbd0a5573fe988aabadc20f0eb853a3, type: 3}
   doorOpen: {fileID: -1589305404, guid: 8dbd0a5573fe988aabadc20f0eb853a3, type: 3}
-  open_audio: {fileID: 8300000, guid: 6c0ad8be3f69517499b4e699ac4d3df4, type: 3}
-  close_audio: {fileID: 8300000, guid: 972cbb5f6d1755f468179a6e73e6b1d1, type: 3}
+  open_audio: {fileID: 8300000, guid: 970b607e74acab74395cdcca21f5e085, type: 3}
+  close_audio: {fileID: 8300000, guid: 52993e56a87495ccb8bd354acfa9db8d, type: 3}
 --- !u!61 &2855545899422299046
 BoxCollider2D:
   m_ObjectHideFlags: 0

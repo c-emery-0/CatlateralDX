@@ -6,17 +6,21 @@ public class SimpleObject : MonoBehaviour
 {
 
     [SerializeField] AudioClip[] collisionSounds;    
-    [SerializeField] AudioClip collisionSound;
 
     [SerializeField] AudioClip[] breakSounds;
 
     private bool knockedOver = false;
     private bool broken = false;
+    private bool behindDoor = false;
+    private bool followPlayer = false;
+    private float moveSpeed = 100f;
+
+
     private PointCounter pointCounter;
     private GameObject player;
     private AudioSource audiosource;
-    private bool followPlayer = false;
-    private float moveSpeed = 100f;
+
+
 
 
     // Start is called before the first frame update
@@ -47,6 +51,8 @@ public class SimpleObject : MonoBehaviour
     
     private void OnCollisionEnter2D(Collision2D collision)
     {
+        if (behindDoor) return;
+        
         if (collision.gameObject.CompareTag("Player") && !knockedOver) {
             int randNum = (int) UnityEngine.Random.value * collisionSounds.Length;
 
@@ -71,23 +77,8 @@ public class SimpleObject : MonoBehaviour
 
     }
 
-    public void toggleObjectBehindDoor(bool isOpen) {
-        Collider2D[] colliders = GetComponents<Collider2D>();
-            foreach (Collider2D coll in colliders) {
-                //coll.forceReceiveLayers = (isOpen) ? LayerMask.NameToLayer("Everything") : LayerMask.GetMask("Nothing");
-                //coll.forceSendLayers = (isOpen) ? LayerMask.NameToLayer("Everything") : LayerMask.GetMask("Nothing");
-                coll.excludeLayers = (isOpen) ? LayerMask.NameToLayer("Nothing") : LayerMask.GetMask("Player");
-            }
-
-            try {
-
-                GetComponent<Rigidbody2D>().isKinematic = !isOpen;
-
-                if (!isOpen) {
-                    GetComponent<Rigidbody2D>().velocity = new Vector2(0, 0);
-                    GetComponent<Rigidbody2D>().angularVelocity = 0;
-                }
-            } catch {}
+    public void toggleObject(bool isOpen) {
+        behindDoor = !isOpen;
     }
 
 
@@ -121,7 +112,16 @@ public class SimpleObject : MonoBehaviour
     }
 
     private IEnumerator breakObject() {
+        Debug.Log("Breaking "+gameObject+". Behind door is "+behindDoor);
         GetComponent<ParticleSystem>().Play();
+        
+        GetComponent<SpriteRenderer>().enabled = false;
+        foreach (Collider2D coll in GetComponents<Collider2D>()) {
+            coll.enabled = false;
+        }
+        GetComponent<Rigidbody2D>().velocity = new Vector2(0, 0);
+        GetComponent<Rigidbody2D>().angularVelocity = 0;
+
         yield return new WaitForSeconds(2f);
         Destroy(gameObject);
     }

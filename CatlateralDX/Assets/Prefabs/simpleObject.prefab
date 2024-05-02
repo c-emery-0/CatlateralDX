@@ -131,9 +131,9 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 7df9997ea3245b6d880929d7c8df7110, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  collisionSounds: []
+  collisionSounds:
+  - {fileID: 8300000, guid: 970b607e74acab74395cdcca21f5e085, type: 3}
   breakSounds: []
-  pointCounter: {fileID: 0}
 --- !u!60 &8722860318999981253
 PolygonCollider2D:
   m_ObjectHideFlags: 0
@@ -410,7 +410,7 @@ ParticleSystem:
     startLifetime:
       serializedVersion: 2
       minMaxState: 0
-      scalar: 1
+      scalar: 2
       minScalar: 5
       maxCurve:
         serializedVersion: 2
@@ -517,7 +517,7 @@ ParticleSystem:
       serializedVersion: 2
       minMaxState: 0
       minColor: {r: 1, g: 1, b: 1, a: 1}
-      maxColor: {r: 1, g: 1, b: 1, a: 1}
+      maxColor: {r: 0.29506543, g: 0.2943663, b: 0.990566, a: 1}
       maxGradient:
         serializedVersion: 2
         key0: {r: 1, g: 1, b: 1, a: 1}
@@ -4145,7 +4145,7 @@ ParticleSystem:
     radiusScale: 1
     collidesWith:
       serializedVersion: 2
-      m_Bits: 192
+      m_Bits: 448
     maxCollisionShapes: 256
     quality: 0
     voxelSize: 0.5

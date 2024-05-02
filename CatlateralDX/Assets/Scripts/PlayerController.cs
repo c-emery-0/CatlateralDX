@@ -79,7 +79,7 @@ public class PlayerController : MonoBehaviour
                 StartCoroutine(DisableCollision());
             }
         }
-        if (Input.GetKeyDown(KeyCode.C) || Input.GetKeyUp(KeyCode.C)) {
+        if (Input.GetKeyDown(KeyCode.X) || Input.GetKeyUp(KeyCode.X)) {
             toggleGrab();
         }
 
@@ -124,11 +124,13 @@ public class PlayerController : MonoBehaviour
 
     private IEnumerator DisableCollision()
     {
+        //for disabling fallthrough platforms
         BoxCollider2D platColl = currentOneWayPlatform.GetComponent<BoxCollider2D>();
         Physics2D.IgnoreCollision(collider, platColl);
         yield return new WaitForSeconds(0.75f);
         Physics2D.IgnoreCollision(collider, platColl, false);
     }
+
     private IEnumerator JumpCooldown()
     {
         canJump = false;
