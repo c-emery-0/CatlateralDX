@@ -1,3 +1,5 @@
+/**
+
 private ParticleSystem trailPartical; 
 
 public Color StartColor
@@ -20,7 +22,7 @@ OR {
 main.startColor = Color.blue;
 }
 
-^^‌for fucked up start color not working?
+^^for fucked up start color not working?
 vv for popup text
 
 void ShowDamage(string text) {
@@ -30,3 +32,5 @@ void ShowDamage(string text) {
     }
     //floating text prefab is a prefab of floattextParent
 }
+
+*/
