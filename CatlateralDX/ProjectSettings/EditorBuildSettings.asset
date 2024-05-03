@@ -9,8 +9,14 @@ EditorBuildSettings:
     path: Assets/Scenes/Start.unity
     guid: 0ecf488d0d0eaf2f29b2714504bfacb5
   - enabled: 1
+    path: Assets/Scenes/Select_Level.unity
+    guid: 1b3105482742e685fba560c2cb8d443d
+  - enabled: 1
     path: Assets/Scenes/Credits.unity
     guid: c3307659ddae64ff886d45ad1871e571
+  - enabled: 1
+    path: Assets/Scenes/Level_Introductory.unity
+    guid: 33f78331b7e4ec1139b338c111e85e8e
   - enabled: 1
     path: Assets/Scenes/Level_Bathroom.unity
     guid: 2cda990e2423bbf4892e6590ba056729

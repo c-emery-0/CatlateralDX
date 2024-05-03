@@ -6,7 +6,6 @@ public class SimpleObject : MonoBehaviour
 {
 
     [SerializeField] AudioClip[] collisionSounds;    
-
     [SerializeField] AudioClip[] breakSounds;
 
     private bool knockedOver = false;
@@ -29,6 +28,7 @@ public class SimpleObject : MonoBehaviour
         player = GameObject.Find("Player");
         pointCounter = GameObject.Find("PointCounter").GetComponent<PointCounter>();
         audiosource = GetComponent<AudioSource>();
+        if (breakSounds == null || breakSounds.Length == 0) collisionSounds = breakSounds;
 
     }
 
@@ -53,14 +53,18 @@ public class SimpleObject : MonoBehaviour
     {
         if (behindDoor) return;
         
-        if (collision.gameObject.CompareTag("Player") && !knockedOver) {
+        if (collision.gameObject.CompareTag("Player") 
+        && collision.relativeVelocity.magnitude > 14.5f && !knockedOver) {
             int randNum = (int) UnityEngine.Random.value * collisionSounds.Length;
 
             if (collisionSounds.Length > 0) {
-            audiosource.clip = collisionSounds[randNum];
-            audiosource.Play();}
+                audiosource.clip = collisionSounds[randNum];
+                audiosource.Play();
+            }
+
             StartCoroutine(breakObject());
-            pointCounter.UpdatePoints(10);    
+            pointCounter.UpdatePoints(10, GetComponent<Transform>().position);  
+
             knockedOver = true;
         }
         /*
@@ -115,13 +119,16 @@ public class SimpleObject : MonoBehaviour
         Debug.Log("Breaking "+gameObject+". Behind door is "+behindDoor);
         GetComponent<ParticleSystem>().Play();
         
+        //remove visually before actuallly deleting object
         GetComponent<SpriteRenderer>().enabled = false;
+        GetComponentInChildren<SpriteRenderer>().enabled = false;
         foreach (Collider2D coll in GetComponents<Collider2D>()) {
             coll.enabled = false;
         }
         GetComponent<Rigidbody2D>().velocity = new Vector2(0, 0);
         GetComponent<Rigidbody2D>().angularVelocity = 0;
 
+        //actually delete object
         yield return new WaitForSeconds(2f);
         Destroy(gameObject);
     }
