@@ -12,6 +12,10 @@ public class FollowMouse : MonoBehaviour {
 	
 	// Update is called once per frame
 	void Update () {
+        if (!Input.mousePresent) {
+            Debug.Log("where da mouse??");
+            return;
+        }
         Debug.Log("following mouse!");
         mousePosition = Camera.main.ScreenToWorldPoint(Input.mousePosition) ;
         direction = (mousePosition - transform.position).normalized;

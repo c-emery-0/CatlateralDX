@@ -53,7 +53,7 @@ public class GameMenus : MonoBehaviour
         if (ptcounter.propscountCurrent == ptcounter.propscountInitial) {
             completiontext.text = "...You found all objects in the level!";
         } else {
-            completiontext.text = "...You broke "+(ptcounter.propscountInitial-ptcounter.propscountCurrent)
+            completiontext.text = "...You broke "+ (ptcounter.propscountInitial - ptcounter.propscountCurrent)
                                 +" out of "+ptcounter.propscountInitial+" total objects!";
         }
         //scroll numbers

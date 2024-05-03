@@ -106,9 +106,9 @@ public class Door : MonoBehaviour
     }
 
     public void Grab() {
-
+        toggleObjectsBehindDoor(true);
     }
     public void Ungrab() {
-    
+        toggleObjectsBehindDoor(true);
     }
 }

@@ -27,7 +27,7 @@ public class Collision : MonoBehaviour
     
     [Range(0.2f, 0.8f)]
     public float collisionRadius;
-    [Range(0.2f, 0.8f)]
+    [Range(0.8f, 3.8f)]
     public float grabRadius;
     [Range(0.2f, 5f)]
     public float botScale, sideScale;
@@ -70,6 +70,7 @@ public class Collision : MonoBehaviour
     {
         Gizmos.color = (onGround) ? Color.red : Color.green;
 
+        Gizmos.DrawWireSphere((Vector2)transform.position, grabRadius);
         Gizmos.DrawWireSphere((Vector2)transform.position  + bottomOffset, collisionRadius);
         Gizmos.DrawWireSphere((Vector2)transform.position  + rightOffset, collisionRadius);
         Gizmos.DrawWireSphere((Vector2)transform.position  + leftOffset, collisionRadius);

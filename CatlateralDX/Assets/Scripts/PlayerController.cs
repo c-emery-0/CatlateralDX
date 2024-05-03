@@ -28,15 +28,6 @@ public class PlayerController : MonoBehaviour
 
     private int inputx, inputy;
 
-
-    // To get camera to follow Player: 
-    //      1. Add/install Cinemachine from Unity package manager
-    //      2. Add a Cinemachine 2D Camera object to scene
-    //      3. Drag and drop Player object into the 2D Camera's 'follow' field
-
-    // A Cinemachine virtual camera is like a cameraman controlling the position and settings 
-    //      of the Main Camera, but not actually a camera itself.
-
     private enum CharStates {
         idle = 1,
         walk = 2,
@@ -73,15 +64,12 @@ public class PlayerController : MonoBehaviour
         moveDirection = inputx;
         
         
-        if (inputy < 0) {
-            if (currentOneWayPlatform != null)
-            {
-                StartCoroutine(DisableCollision());
-            }
-        }
-        if (Input.GetKeyDown(KeyCode.X) || Input.GetKeyUp(KeyCode.X)) {
+        if (inputy < 0 && currentOneWayPlatform != null) 
+            StartCoroutine(DisableCollision());
+            
+        if (Input.GetKeyDown(KeyCode.X) || Input.GetKeyUp(KeyCode.X)) 
             toggleGrab();
-        }
+        
 
     }
     // Called at fixed intervals regardless of frame rate, unlike the Update method.
@@ -89,34 +77,38 @@ public class PlayerController : MonoBehaviour
     {
         updateCharState();
         
+        //xvelo
         float xvelo = r2d.velocity.x;
-        if (System.Math.Abs(r2d.velocity.x) < maxSpeed || System.Math.Abs(moveDirection + r2d.velocity.x) < System.Math.Abs(r2d.velocity.x  ))
+        if (System.Math.Abs(r2d.velocity.x) < maxSpeed 
+        || System.Math.Abs(moveDirection + r2d.velocity.x) < System.Math.Abs(r2d.velocity.x))
             xvelo += moveDirection * maxSpeed * 0.1f;
         if (moveDirection == 0) 
             xvelo = 0;
-        r2d.velocity = new Vector2(xvelo, r2d.velocity.y);
         
-
+        //yvelo
+        float yvelo = r2d.velocity.y;
         if (!( collision.onGround && currentOneWayPlatform != null))
             //falling
-            {r2d.velocity = new Vector2(r2d.velocity.x, r2d.velocity.y + Physics2D.gravity.y * Time.deltaTime);}
+            yvelo += Physics2D.gravity.y * Time.deltaTime;
         else
             //onGround
-            {r2d.velocity = new Vector2(r2d.velocity.x, 0);}
+            yvelo = 0;
+        
+        r2d.velocity = new Vector2(xvelo, yvelo);
         
         Jump();
     }
-    private void OnCollisionEnter2D(Collision2D collision)
+    private void OnCollisionEnter2D(Collision2D coll)
     {
-        if (collision.gameObject.CompareTag("OneWayPlatform"))
+        if (coll.gameObject.CompareTag("OneWayPlatform"))
         {
-            currentOneWayPlatform = collision.gameObject;
+            currentOneWayPlatform = coll.gameObject;
         }
     }
 
-    private void OnCollisionExit2D(Collision2D collision)
+    private void OnCollisionExit2D(Collision2D coll)
     {
-        if (collision.gameObject.CompareTag("OneWayPlatform"))
+        if (coll.gameObject.CompareTag("OneWayPlatform"))
         {
             currentOneWayPlatform = null;
         }
@@ -160,14 +152,17 @@ public class PlayerController : MonoBehaviour
 
     void toggleGrab() {
         if (grabbedObject) {
-            grabbedObject.GetComponent<SimpleObject>().Ungrab();
+            try {grabbedObject.GetComponent<SimpleObject>().Ungrab();}
+            catch {grabbedObject.GetComponent<Door>().Ungrab();}
+
+            grabbedObject = null;
             return;
         }
 
         //look for closest collider nearProps
         float oldDistance = float.PositiveInfinity;
         Collider2D closestObj = null;
-        foreach (Collider2D obj in collision.nearProps)
+        foreach (Collider2D obj in collision.nearProps)////////what
         {
             float dist = Vector2.Distance(this.gameObject.transform.position, obj.gameObject.transform.position);
             if (dist < oldDistance && (obj.gameObject.CompareTag("Prop") || obj.gameObject.CompareTag("Lever")))
@@ -178,19 +173,11 @@ public class PlayerController : MonoBehaviour
         }
 
         if (closestObj == null) return;
-
-        //if collider is A Door‌ Handle (ie. "Lever"), tell door script to do something
-        //can therefore extend to say. toilet handle.
-
-        //if collider is a regular prop / SimpleObject, set position to the same stuff as followMouse and disable collider
-
+        Debug.Log(closestObj);
         grabbedObject = closestObj.gameObject;
-        try {
-            grabbedObject.GetComponent<SimpleObject>().Grab();
-        }
-        catch {
-            grabbedObject.GetComponent<Door>().Grab();
-        }
+
+        try {grabbedObject.GetComponent<SimpleObject>().Grab();}
+        catch {grabbedObject.GetComponent<Door>().Grab();}
     }
 
     private void updateCharState() {

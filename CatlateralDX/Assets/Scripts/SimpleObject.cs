@@ -12,7 +12,7 @@ public class SimpleObject : MonoBehaviour
     private bool broken = false;
     private bool behindDoor = false;
     private bool followPlayer = false;
-    private float moveSpeed = 100f;
+    private float moveSpeed = 50f;
 
 
     private PointCounter pointCounter;
@@ -40,6 +40,8 @@ public class SimpleObject : MonoBehaviour
         PlatformEffector2D effector = GetComponent<PlatformEffector2D>();
         effector.rotationalOffset = -1 * GetComponent<Transform>().rotation.eulerAngles.z‌;
 
+
+        //ouhh this really isn't working HAHAHA
         if (followPlayer) {
             Vector2 pos = GetComponent<Transform>().position;
             Vector2 playerpos = new Vector2(player.GetComponent<Transform>().position.x, player.GetComponent<Transform>().position.y);
@@ -54,7 +56,7 @@ public class SimpleObject : MonoBehaviour
         if (behindDoor) return;
         
         if (collision.gameObject.CompareTag("Player") 
-        && collision.relativeVelocity.magnitude > 14.5f && !knockedOver) {
+        && collision.relativeVelocity.magnitude > 14.75f && !knockedOver) {
             int randNum = (int) UnityEngine.Random.value * collisionSounds.Length;
 
             if (collisionSounds.Length > 0) {
@@ -85,7 +87,7 @@ public class SimpleObject : MonoBehaviour
         behindDoor = !isOpen;
     }
 
-
+    //okay this DEFINITELY isn't working
     public void Grab() {
 
         Collider2D[] colliders = GetComponents<Collider2D>();
@@ -94,11 +96,12 @@ public class SimpleObject : MonoBehaviour
             coll.forceSendLayers = LayerMask.GetMask("Nothing");
             
         }
-
         GetComponent<Transform>().position = new Vector3(GetComponent<Transform>().position.x, 
                             GetComponent<Transform>().position.y, -9); //set obj to directly behind player
-
         followPlayer = true;
+
+
+        pointCounter.UpdatePoints(5, GetComponent<Transform>().position);  
     }
     public void Ungrab() {
 
@@ -121,7 +124,8 @@ public class SimpleObject : MonoBehaviour
         
         //remove visually before actuallly deleting object
         GetComponent<SpriteRenderer>().enabled = false;
-        GetComponentInChildren<SpriteRenderer>().enabled = false;
+        foreach (SpriteRenderer sprite in GetComponentsInChildren<SpriteRenderer>())
+            sprite.enabled = false;
         foreach (Collider2D coll in GetComponents<Collider2D>()) {
             coll.enabled = false;
         }
