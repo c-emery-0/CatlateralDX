@@ -11,17 +11,25 @@ public class PointCounter : MonoBehaviour
 
     void Start() {
         propscountInitial = GameObject.Find("Props").transform.childCount;
+        propscountCurrent = propscountInitial;
     }
 
     public void UpdatePoints(int pts, Vector3 position)
     {
-        propscountCurrent = GameObject.Find("Props").transform.childCount;
-        
+        if (pts == 10) propscountCurrent = propscountCurrent - 1;
         points += pts;
 
         if (floatingTextPrefab) {
             GameObject prefab = Instantiate(floatingTextPrefab, position, Quaternion.identity);
             prefab.GetComponentInChildren<TextMeshProUGUI>().text = "" + pts;
         }
+        Debug.Log("Points "+points+" Num Objects Destoyred "+(propscountInitial-propscountCurrent));
+    }
+
+    public int GetNumObjDestroyed() {
+        return propscountInitial - propscountCurrent;
+    }
+    public bool IsAllObjDestroyed() {
+        return propscountCurrent == 0;
     }
 }
