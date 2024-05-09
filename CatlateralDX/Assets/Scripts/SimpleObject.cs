@@ -30,6 +30,8 @@ public class SimpleObject : MonoBehaviour
         audiosource = GetComponent<AudioSource>();
         if (breakSounds == null || breakSounds.Length == 0) collisionSounds = breakSounds;
 
+        particleSystem = GetComponent<ParticleSystem>().MainModule;
+        particleSystem.startColor = AverageColor();
     }
 
     // Update is called once per frame
@@ -135,5 +137,17 @@ public class SimpleObject : MonoBehaviour
         //actually delete object
         yield return new WaitForSeconds(2f);
         Destroy(gameObject);
+    }
+
+    private Color AverageColor() {
+        Color[] allcolors = GetComponent<SpriteRenderer>().sprite.GetPixels;
+        int total, r, g, b;
+        foreach (Color c in allcolors) {
+            total ++;
+            r += c.R;
+            g += c.G;
+            b += c.B;
+        }
+        return new Color(r/total, g/total, b/total);
     }
 }
