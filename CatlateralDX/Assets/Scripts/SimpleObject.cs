@@ -30,8 +30,9 @@ public class SimpleObject : MonoBehaviour
         audiosource = GetComponent<AudioSource>();
         if (breakSounds == null || breakSounds.Length == 0) collisionSounds = breakSounds;
 
-        particleSystem = GetComponent<ParticleSystem>().MainModule;
-        particleSystem.startColor = AverageColor();
+        ParticleSystem.MainModule ps_mm = GetComponent<ParticleSystem>().main;
+        ps_mm.startColor = AverageColor();
+
     }
 
     // Update is called once per frame
@@ -71,7 +72,7 @@ public class SimpleObject : MonoBehaviour
 
             knockedOver = true;
         }
-        /*
+        /**
         if (collision.gameObject.CompareTag("Player") && !broken && !collision.gameObject.canDash) {
             
             int randNum = (int) UnityEngine.Random.value * breakSounds.Length;
@@ -81,7 +82,7 @@ public class SimpleObject : MonoBehaviour
             pointCounter.UpdatePoints(50);    
             broken = true;
             StartCoroutine(breakObject());
-        }**/
+        }*/
 
     }
 
@@ -138,16 +139,21 @@ public class SimpleObject : MonoBehaviour
         yield return new WaitForSeconds(2f);
         Destroy(gameObject);
     }
-
+    
     private Color AverageColor() {
-        Color[] allcolors = GetComponent<SpriteRenderer>().sprite.GetPixels;
-        int total, r, g, b;
+        Color[] allcolors = GetComponent<SpriteRenderer>().sprite.texture.GetPixels();
+        int total =0; float r =0f, g=0f, b=0f;
         foreach (Color c in allcolors) {
-            total ++;
-            r += c.R;
-            g += c.G;
-            b += c.B;
+            if (c.a < 0.9) continue;
+            total += 1;
+            r += c.r * c.r;
+            g += c.g * c.g;
+            b += c.b * c.b;
+            Debug.Log(c.a);
         }
-        return new Color(r/total, g/total, b/total);
+        Debug.Log("" + gameObject + " " + (r/(float) total) + " "+ (g/(float) total) + " "+ (b/(float) total));
+        return new Color((float) System.Math.Sqrt(r/(float) total), 
+                        (float) System.Math.Sqrt(g/(float) total), 
+                        (float) System.Math.Sqrt(b/(float) total));
     }
 }
