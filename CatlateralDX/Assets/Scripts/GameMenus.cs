@@ -61,7 +61,7 @@ public class GameMenus : MonoBehaviour
         pointstext.text = "" + ptcounter.points + " pts";
     }
 
-
+    //end of level menu scroll numbers
     private IEnumerator CountToNum(int target) {
         float countDuration = 1.5f;
         int current = 0;

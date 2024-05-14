@@ -13,7 +13,7 @@ public class FollowMouse : MonoBehaviour {
 	// Update is called once per frame
 	void Update () {
         if (!Input.mousePresent) {
-            Debug.Log("where da mouse??");
+            Debug.Log("where is the mouse??");
             return;
         }
         Debug.Log("following mouse!");

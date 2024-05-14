@@ -7,7 +7,6 @@ public class SimpleObject : MonoBehaviour
 
     [SerializeField] AudioClip[] collisionSounds;    
     [SerializeField] AudioClip[] breakSounds;
-
     private bool knockedOver = false;
     private bool broken = false;
     private bool behindDoor = false;
@@ -28,8 +27,11 @@ public class SimpleObject : MonoBehaviour
         player = GameObject.Find("Player");
         pointCounter = GameObject.Find("PointCounter").GetComponent<PointCounter>();
         audiosource = GetComponent<AudioSource>();
+
+        //remove this as soon as we have unique sounds for break vs knock over
         if (breakSounds == null || breakSounds.Length == 0) collisionSounds = breakSounds;
 
+        //set particle color to ave color ? 
         ParticleSystem.MainModule ps_mm = GetComponent<ParticleSystem>().main;
         ps_mm.startColor = AverageColor();
 
@@ -44,13 +46,14 @@ public class SimpleObject : MonoBehaviour
         effector.rotationalOffset = -1 * GetComponent<Transform>().rotation.eulerAngles.z‌;
 
 
-        //ouhh this really isn't working HAHAHA
+        //ouhh the 'grabbed objects follow player' really isn't working HAHAHA
         if (followPlayer) {
             Vector2 pos = GetComponent<Transform>().position;
             Vector2 playerpos = new Vector2(player.GetComponent<Transform>().position.x, player.GetComponent<Transform>().position.y);
-            Vector2 direction = (pos - playerpos).normalized;
-            GetComponent<Rigidbody2D>().velocity = new Vector2(direction.x * moveSpeed, direction.y * moveSpeed);
+            Vector2 direction = (pos - playerpos).normalized; 
+            GetComponent<Rigidbody2D>().velocity = new Vector2(direction.x * moveSpeed, direction.y * moveSpeed); //rockets obj away from player :salute:
         }
+
     }
 
     
@@ -59,9 +62,9 @@ public class SimpleObject : MonoBehaviour
         if (behindDoor) return;
         
         if (collision.gameObject.CompareTag("Player") 
-        && collision.relativeVelocity.magnitude > 14.75f && !knockedOver) {
+        && collision.relativeVelocity.magnitude > 14.75f && !knockedOver) {            
+            //if obj have multiple breaking sounds, play any
             int randNum = (int) UnityEngine.Random.value * collisionSounds.Length;
-
             if (collisionSounds.Length > 0) {
                 audiosource.clip = collisionSounds[randNum];
                 audiosource.Play();
@@ -73,6 +76,7 @@ public class SimpleObject : MonoBehaviour
             knockedOver = true;
         }
         /**
+        //distinguish "knocking over" state from "breaking" state
         if (collision.gameObject.CompareTag("Player") && !broken && !collision.gameObject.canDash) {
             
             int randNum = (int) UnityEngine.Random.value * breakSounds.Length;
@@ -90,24 +94,26 @@ public class SimpleObject : MonoBehaviour
         behindDoor = !isOpen;
     }
 
+
     //okay this DEFINITELY isn't working
     public void Grab() {
 
+        //disable colliders
         Collider2D[] colliders = GetComponents<Collider2D>();
         foreach (Collider2D coll in colliders) {
             coll.forceReceiveLayers =  LayerMask.GetMask("Nothing");
             coll.forceSendLayers = LayerMask.GetMask("Nothing");
-            
         }
+
         GetComponent<Transform>().position = new Vector3(GetComponent<Transform>().position.x, 
                             GetComponent<Transform>().position.y, -9); //set obj to directly behind player
         followPlayer = true;
 
-
+        //this method currently ROCKETS objects away from player so .... may as well give them points for that
         pointCounter.UpdatePoints(5, GetComponent<Transform>().position);  
     }
     public void Ungrab() {
-
+        //enable colliders
         Collider2D[] colliders = GetComponents<Collider2D>();
         foreach (Collider2D coll in colliders) {
             coll.forceReceiveLayers = LayerMask.NameToLayer("Everything");
@@ -116,7 +122,7 @@ public class SimpleObject : MonoBehaviour
         }
 
         GetComponent<Transform>().position = new Vector3(GetComponent<Transform>().position.x, 
-                            GetComponent<Transform>().position.y, 0); //set obj to normal :)
+                            GetComponent<Transform>().position.y, 0); //set obj to normal z
 
         followPlayer = false;
     }
@@ -129,17 +135,20 @@ public class SimpleObject : MonoBehaviour
         GetComponent<SpriteRenderer>().enabled = false;
         foreach (SpriteRenderer sprite in GetComponentsInChildren<SpriteRenderer>())
             sprite.enabled = false;
+        
+        //freeze object
         foreach (Collider2D coll in GetComponents<Collider2D>()) {
             coll.enabled = false;
         }
         GetComponent<Rigidbody2D>().velocity = new Vector2(0, 0);
         GetComponent<Rigidbody2D>().angularVelocity = 0;
 
-        //actually delete object
+        //actually delete gameObject
         yield return new WaitForSeconds(2f);
         Destroy(gameObject);
     }
     
+    //ArgumentException: Texture2D.GetPixels: texture data is either not readable, corrupted or does not exist
     private Color AverageColor() {
         Color[] allcolors = GetComponent<SpriteRenderer>().sprite.texture.GetPixels();
         int total =0; float r =0f, g=0f, b=0f;
